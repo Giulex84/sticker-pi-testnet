@@ -827,7 +827,7 @@
         </section>
         <footer class="footer">
           <a href="/privacy.html">Privacy</a> · <a href="/terms.html">Terms</a
-          ><br /><br />Sticker.pi Testnet · v0.7.2
+          ><br /><br />Sticker.pi Testnet · v0.8
         </footer>
       </section>
     </main>
@@ -846,6 +846,7 @@
         bestCombo = 0,
         gameHits = 0,
         gameMisses = 0,
+        currentRunId = null,
         roundStartedAt = 0,
         roundLocked = false,
         storageOnline = false,
@@ -877,7 +878,7 @@
         ["⭐", "Founder Star", "legendary"],
       ];
       let player = {
-        version: 2,
+        version: 3,
         level: 1,
         xp: 0,
         streak: 0,
@@ -886,6 +887,7 @@
         collection: {},
         duplicates: {},
         badges: [],
+        daily: { bestScore: 0, packsOpened: 0, newUnique: 0 },
         stats: { plays: 0, bestScore: 0, bestCombo: 0, packsOpened: 0 },
       };
       const dict = {
@@ -1043,7 +1045,8 @@
             player = {
               ...player,
               ...p,
-              version: 2,
+              version: 3,
+              daily: { ...player.daily, ...(p.daily || {}) },
               stats: { ...player.stats, ...(p.stats || {}) },
             };
         } catch {}
@@ -1061,18 +1064,18 @@
         document.getElementById("xpNext").textContent = player.level * 100;
         document.getElementById("xpBar").style.width = (player.xp % 100) + "%";
         document.getElementById("q1").textContent =
-          Math.min(20, player.stats?.bestScore || 0) + "/20";
+          Math.min(20, player.daily?.bestScore || 0) + "/20";
         document.getElementById("q2").textContent =
-          Math.min(1, player.stats?.packsOpened || 0) + "/1";
+          Math.min(1, player.daily?.packsOpened || 0) + "/1";
         document.getElementById("q3").textContent =
-          Math.min(3, uniqueCount()) + "/3";
+          Math.min(3, player.daily?.newUnique || 0) + "/3";
         document.getElementById("storageFlag").textContent = storageOnline
           ? "☁ synced"
           : "device save";
         renderStats();
         saveLocal();
       }
-      async function stateApi(action = "load") {
+      async function stateApi(action = "load", payload = {}) {
         if (!authData) return;
         try {
           const r = await fetch("/api/state", {
@@ -1081,24 +1084,19 @@
               Authorization: "Bearer " + authData.accessToken,
               "Content-Type": "application/json",
             },
-            body: JSON.stringify(
-              action === "save"
-                ? { action: "save", player }
-                : { action: "load" },
-            ),
+            body: JSON.stringify({ action, ...payload }),
           });
           const d = await r.json();
           if (r.ok && d.player) {
             storageOnline = !!d.storage;
-            if (action === "load") {
-              player = {
-                ...player,
-                ...d.player,
-                version: 2,
-                stats: { ...player.stats, ...(d.player.stats || {}) },
-              };
-              render();
-            }
+            player = {
+              ...player,
+              ...d.player,
+              version: 3,
+              daily: { ...player.daily, ...(d.player.daily || {}) },
+              stats: { ...player.stats, ...(d.player.stats || {}) },
+            };
+            render();
             return d;
           }
         } catch {}
@@ -1106,7 +1104,6 @@
       }
       function persist() {
         render();
-        stateApi("save");
       }
       function renderAlbum() {
         const g = document.getElementById("albumGrid");
@@ -1328,6 +1325,9 @@
         bestCombo = 0;
         gameHits = 0;
         gameMisses = 0;
+        currentRunId =
+          globalThis.crypto?.randomUUID?.() ||
+          `${Date.now()}-${Math.random().toString(36).slice(2)}`;
         gameSeconds = 30;
         feverMode = false;
         document.getElementById("gameBox").classList.remove("fever");
@@ -1354,7 +1354,7 @@
           if (gameSeconds <= 0) finishGame();
         }, 1000);
       }
-      function finishGame() {
+      async function finishGame() {
         clearInterval(gameTimer);
         gameTimer = null;
         clearRoundTimer();
@@ -1374,33 +1374,25 @@
               : gameScore >= 15
                 ? "Bronze run!"
                 : "Run complete";
-        const xp = 10 + gameScore * 2 + Math.floor(bestCombo / 2);
-        player.xp = (player.xp || 0) + xp;
-        player.stats = player.stats || {};
-        player.stats.plays = (player.stats.plays || 0) + 1;
-        player.stats.bestScore = Math.max(
-          player.stats.bestScore || 0,
-          gameScore,
-        );
-        player.stats.bestCombo = Math.max(
-          player.stats.bestCombo || 0,
-          bestCombo,
-        );
-        if (player.lastDaily !== today()) {
-          player.streak = (player.streak || 0) + 1;
-          player.lastDaily = today();
-        }
-        let reward = "";
-        if (gameScore >= 30) {
-          player.packs = (player.packs || 0) + 1;
-          reward = " • +1 pack 🎁";
-        }
         const attempts = gameHits + gameMisses;
         const accuracy = attempts ? Math.round((gameHits / attempts) * 100) : 100;
-        document.getElementById("gameResult").textContent =
-          `Score ${gameScore} • Accuracy ${accuracy}% • Best combo x${bestCombo} • +${xp} XP${reward}`;
+        document.getElementById("gameResult").textContent = "Saving verified result…";
         document.getElementById("roundMsg").textContent = "";
-        persist();
+        const d = await stateApi("record_run", {
+          runId: currentRunId,
+          score: gameScore,
+          bestCombo,
+          hits: gameHits,
+          misses: gameMisses,
+        });
+        if (d) {
+          const reward = d.packGranted ? " • +1 daily pack 🎁" : "";
+          document.getElementById("gameResult").textContent =
+            `Score ${gameScore} • Accuracy ${accuracy}% • Best combo x${bestCombo} • +${d.xp} XP${reward}`;
+        } else {
+          document.getElementById("gameResult").textContent =
+            "Result could not be verified. Your saved progress was not changed.";
+        }
       }
       function weightedSticker() {
         const r = Math.random();
@@ -1423,31 +1415,25 @@
             .filter(([s]) => s[2] === "common");
         return pool[Math.floor(Math.random() * pool.length)][1];
       }
-      function openPack() {
+      async function openPack() {
         if ((player.packs || 0) < 1) return;
-        player.packs--;
-        player.stats = player.stats || {};
-        player.stats.packsOpened = (player.stats.packsOpened || 0) + 1;
-        const reveal = [];
-        for (let x = 0; x < 3; x++) {
-          const i = weightedSticker();
-          const prev = Number(player.collection?.[i] || 0);
-          player.collection[i] = prev + 1;
-          if (prev >= 1)
-            player.duplicates[i] = Number(player.duplicates?.[i] || 0) + 1;
-          reveal.push(i);
-        }
-        player.xp = (player.xp || 0) + 15;
+        const button = document.getElementById("openPackBtn");
+        button.disabled = true;
+        const openId =
+          globalThis.crypto?.randomUUID?.() ||
+          `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+        const d = await stateApi("open_pack", { openId });
+        button.disabled = false;
+        if (!d?.reveal) return;
         const box = document.getElementById("packReveal");
         box.innerHTML = "";
-        reveal.forEach((i, n) => {
+        d.reveal.forEach((i, n) => {
           const el = document.createElement("div");
           el.className = "stickerCard reveal";
           el.style.animationDelay = n * 0.12 + "s";
           el.innerHTML = `<div class="stickerArt">${stickers[i][0]}</div><div class="stickerName">${stickers[i][1]}</div><div class="rarity">${stickers[i][2]}</div>`;
           box.appendChild(el);
         });
-        persist();
       }
       function setPaymentStatus(t) {
         document.getElementById("paymentStatus").textContent = t || "";
@@ -1475,8 +1461,10 @@
           });
           if (d.completed) {
             setPaymentStatus("Previous payment completed ✓");
-            player.packs = (player.packs || 0) + 1;
-            persist();
+            if (d.player) {
+              player = { ...player, ...d.player };
+              render();
+            }
           }
         } catch (e) {
           setPaymentStatus(e.message);
@@ -1535,8 +1523,10 @@
                 const d = await api({ action: "complete", paymentId, txid });
                 if (d.completed) {
                   setPaymentStatus("Payment complete ✓ Bonus pack unlocked");
-                  player.packs = (player.packs || 0) + 1;
-                  persist();
+                  if (d.player) {
+                    player = { ...player, ...d.player };
+                    render();
+                  }
                   b.textContent = "Purchased ✓";
                 }
               },
