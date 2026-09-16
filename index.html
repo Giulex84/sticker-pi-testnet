@@ -470,6 +470,15 @@
       .packReveal .stickerCard { min-width: 0; padding: 10px 5px; }
       .packReveal .stickerArt { font-size: clamp(38px, 12vw, 56px); }
       .packReveal .stickerName { font-size: clamp(12px, 4vw, 16px); overflow-wrap: anywhere; }
+      .packReveal .stickerCard { opacity: 0; transform: translateY(18px) scale(.82); }
+      .packReveal .stickerCard.revealed { animation: packCardReveal .52s cubic-bezier(.2,.9,.3,1.25) forwards; }
+      .packReveal .rarity-rare { border-color: #54bfff; box-shadow: 0 0 22px #299cff33; }
+      .packReveal .rarity-epic { border-color: #b47cff; box-shadow: 0 0 26px #984fff55; }
+      .packReveal .rarity-legendary { border-color: var(--gold); box-shadow: 0 0 34px #ffd16677; background: linear-gradient(155deg,#4a3a1d,#17182e); }
+      .revealBadge { position: absolute; top: 7px; left: 7px; padding: 4px 6px; border-radius: 999px; font-size: 9px; font-weight: 1000; letter-spacing: .06em; background: var(--accent2); color: #07101d; }
+      .revealBadge.dupe { background: #303a67; color: #d9ddff; }
+      .packSummary { min-height: 24px; margin-top: 10px; color: var(--accent2); font-weight: 900; text-align: center; }
+      @keyframes packCardReveal { 0% { opacity:0; transform:translateY(18px) scale(.82) rotate(-3deg) } 70% { transform:translateY(-4px) scale(1.04) rotate(1deg) } 100% { opacity:1; transform:none } }
       .reveal {
         animation: pop 0.45s ease both;
       }
@@ -760,6 +769,7 @@
               Open pack
             </button>
             <div id="packReveal" class="packReveal"></div>
+            <div id="packSummary" class="packSummary"></div>
           </div>
           <div class="tile" style="margin-top: 10px">
             <div class="pack">✨</div>
@@ -828,7 +838,7 @@
         </section>
         <footer class="footer">
           <a href="/privacy.html">Privacy</a> · <a href="/terms.html">Terms</a
-          ><br /><br />Sticker.pi Testnet · v0.8.1
+          ><br /><br />Sticker.pi Testnet · v0.9
         </footer>
       </section>
     </main>
@@ -1420,21 +1430,46 @@
         if ((player.packs || 0) < 1) return;
         const button = document.getElementById("openPackBtn");
         button.disabled = true;
+        button.textContent = lang() === "zh" ? "正在开启…" : "Opening…";
+        document.getElementById("packReveal").innerHTML = "";
+        document.getElementById("packSummary").textContent = "";
         const openId =
           globalThis.crypto?.randomUUID?.() ||
           `${Date.now()}-${Math.random().toString(36).slice(2)}`;
         const d = await stateApi("open_pack", { openId });
         button.disabled = false;
+        button.textContent = dict[lang()].open;
         if (!d?.reveal) return;
         const box = document.getElementById("packReveal");
         box.innerHTML = "";
-        d.reveal.forEach((i, n) => {
+        const cards = d.cards || d.reveal.map((index) => ({ index, isNew: false }));
+        cards.forEach((card, n) => {
+          const i = card.index;
           const el = document.createElement("div");
-          el.className = "stickerCard reveal";
-          el.style.animationDelay = n * 0.12 + "s";
-          el.innerHTML = `<div class="stickerArt">${stickers[i][0]}</div><div class="stickerName">${stickers[i][1]}</div><div class="rarity">${stickers[i][2]}</div>`;
+          el.className = `stickerCard rarity-${stickers[i][2]}`;
+          el.style.animationDelay = n * 0.28 + "s";
+          const badge = card.isNew
+            ? `<span class="revealBadge">${lang() === "zh" ? "新" : "NEW"}</span>`
+            : `<span class="revealBadge dupe">${lang() === "zh" ? "重复" : "DUPLICATE"}</span>`;
+          el.innerHTML = `${badge}<div class="stickerArt">${stickers[i][0]}</div><div class="stickerName">${stickers[i][1]}</div><div class="rarity">${stickers[i][2]}</div>`;
           box.appendChild(el);
+          requestAnimationFrame(() => el.classList.add("revealed"));
         });
+        const newCount = cards.filter((card) => card.isNew).length;
+        const bestRarity = cards.some((card) => stickers[card.index][2] === "legendary")
+          ? "legendary"
+          : cards.some((card) => stickers[card.index][2] === "epic")
+            ? "epic"
+            : cards.some((card) => stickers[card.index][2] === "rare")
+              ? "rare"
+              : "common";
+        setTimeout(() => {
+          document.getElementById("packSummary").textContent =
+            lang() === "zh"
+              ? `新增 ${newCount} 张 • 最高稀有度：${bestRarity.toUpperCase()} • +15 XP`
+              : `${newCount} new • Best rarity: ${bestRarity.toUpperCase()} • +15 XP`;
+          if (newCount > 0 && navigator.vibrate) navigator.vibrate([35, 30, 55]);
+        }, 850);
       }
       function setPaymentStatus(t) {
         document.getElementById("paymentStatus").textContent = t || "";
