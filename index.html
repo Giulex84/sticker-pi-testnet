@@ -463,9 +463,11 @@
       }
       .packReveal {
         display: grid;
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(3, minmax(108px, 1fr));
         gap: 10px;
         margin-top: 12px;
+        overflow-x: auto;
+        padding-bottom: 4px;
       }
       .reveal {
         animation: pop 0.45s ease both;
@@ -690,8 +692,8 @@
             </div>
             <p id="gameHelp" class="muted" data-i18n="gameHelp">
               Find the target, then master two-sticker sequences. Fast, accurate
-              taps score more; mistakes cost one second. The final 5 seconds
-              trigger Fever Mode.
+              taps score more. In the final 5-second Fever Mode, mistakes cost
+              one second.
             </p>
             <div id="targetPrompt" class="targetPrompt">
               <div class="label" data-i18n="findThis">Find this sticker</div>
@@ -825,7 +827,7 @@
         </section>
         <footer class="footer">
           <a href="/privacy.html">Privacy</a> · <a href="/terms.html">Terms</a
-          ><br /><br />Sticker.pi Testnet · v0.7
+          ><br /><br />Sticker.pi Testnet · v0.7.1
         </footer>
       </section>
     </main>
@@ -910,7 +912,7 @@
           score: "Score",
           seconds: "seconds",
           gameHelp:
-            "Find the target, then master two-sticker sequences. Fast, accurate taps score more; mistakes cost one second. The final 5 seconds trigger Fever Mode.",
+            "Find the target, then master two-sticker sequences. Fast, accurate taps score more. In the final 5-second Fever Mode, mistakes cost one second.",
           findThis: "Find this sticker",
           ready: "Ready?",
           start: "Start daily run",
@@ -962,7 +964,7 @@
           score: "分数",
           seconds: "秒",
           gameHelp:
-            "找到目标，然后按顺序完成双贴纸挑战。快速准确可获得更多分数，错误会扣除 1 秒。最后 5 秒进入狂热模式。",
+            "找到目标，然后按顺序完成双贴纸挑战。快速准确可获得更多分数。最后 5 秒进入狂热模式，错误会扣除 1 秒。",
           findThis: "找到这个贴纸",
           ready: "准备好了吗？",
           start: "开始每日挑战",
@@ -1150,12 +1152,12 @@
         return a;
       }
       function roundWindow() {
-        if (feverMode) return 700;
+        if (feverMode) return 850;
         const elapsed = 30 - gameSeconds;
-        if (elapsed >= 20) return 900;
-        if (elapsed >= 12) return 1150;
-        if (elapsed >= 6) return 1400;
-        return 1750;
+        if (elapsed >= 20) return 1200;
+        if (elapsed >= 12) return 1450;
+        if (elapsed >= 6) return 1750;
+        return 2200;
       }
       function clearRoundTimer() {
         if (roundTimer) {
@@ -1167,7 +1169,8 @@
         clearRoundTimer();
         roundLocked = false;
         currentTarget = Math.floor(Math.random() * stickers.length);
-        const sequenceMode = gameScore >= 8 || feverMode;
+        const sequenceMode =
+          feverMode || (gameScore >= 10 && gameCombo >= 3);
         targetSequence = [currentTarget];
         if (sequenceMode) {
           let secondTarget;
@@ -1296,7 +1299,7 @@
           roundLocked = true;
           gameMisses++;
           gameCombo = 0;
-          gameSeconds = Math.max(0, gameSeconds - 1);
+          if (feverMode) gameSeconds = Math.max(0, gameSeconds - 1);
           document.getElementById("timer").textContent = gameSeconds;
           updateAccuracy();
           updateCombo();
@@ -1304,7 +1307,9 @@
           document.getElementById("roundMsg").textContent =
             lang() === "zh"
               ? "连击中断 — 再试一次"
-              : "Wrong sticker — combo lost, -1 second";
+              : feverMode
+                ? "Wrong sticker — combo lost, -1 second"
+                : "Wrong sticker — combo lost";
           setTimeout(chooseTarget, 220);
         }
       }
