@@ -28,7 +28,9 @@ The Testnet build is intentionally focused on retention, social collectability a
 
 ## Release status
 
-`v1.0-rc.1` is the Testnet release candidate. Before it is frozen, it must pass one real UTC day-boundary test and one complete Sticker Catch run using the server-issued run flow.
+`v1.0-rc.2` is the Testnet release candidate. Before it is frozen, it must pass one real UTC day-boundary test and one complete Sticker Catch run using the server-issued run flow.
+
+Completing all 24 Season 1 stickers grants the one-time, server-verified **Master Collector** badge, a gold profile frame, 250 XP and three celebration packs.
 
 ## Product baseline
 
@@ -63,6 +65,9 @@ A2U is **not** required simply to associate the future `sticker.pi` domain. A2U 
 ## Planned milestones
 
 - Stronger challenge telemetry and adaptive anti-cheat limits
+- Daily and weekly leaderboards using a shared server challenge seed
+- Asynchronous player duels using the same verified challenge
+- Weekly tournaments with cosmetic and collectible rewards; no Pi entry fees or Pi prizes are planned for the initial competitive release
 - Safer duplicate exchange/matching
 - Seasonal collections and leaderboard
 - Limited community sticker drops

@@ -18,6 +18,7 @@
 - [x] Idempotent run, pack and payment rewards
 - [x] Per-player mutation lock and API rate limits
 - [x] Payment recovery callback tested
+- [x] One-time server-verified 24/24 Master Collector reward
 
 ## Before Mainnet repository is created
 
@@ -53,5 +54,5 @@ A2U is not treated as a domain-claim shortcut. It should only be enabled when cu
 - [x] Pack reveal updates XP, collection and duplicates server-side
 - [x] English and Simplified Chinese core flows checked on Pi Browser
 - [ ] Verify UTC reset and streak increment across a real day boundary
-- [ ] Re-test one complete run after the v1.0-rc server-issued run change
+- [ ] Re-test one complete run after the v1.0-rc.2 run-verification adjustment
 - [ ] Freeze the accepted commit before creating the separate Mainnet repository

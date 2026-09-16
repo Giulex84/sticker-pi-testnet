@@ -151,6 +151,18 @@
       .hidden {
         display: none !important;
       }
+      .celebration {
+        position: fixed; inset: 0; z-index: 100; display: grid; place-items: center;
+        padding: 24px; background: #050817e8; backdrop-filter: blur(12px);
+      }
+      .celebrationCard {
+        width: min(430px, 100%); padding: 30px 22px; text-align: center;
+        border-radius: 28px; border: 1px solid #ffd166;
+        background: radial-gradient(circle at 50% 0, #6b552c, #171e3b 46%, #10162b);
+        box-shadow: 0 0 70px #ffd16655;
+      }
+      .celebrationIcon { font-size: 76px; animation: pop .65s ease both; }
+      .masterFrame { border-color: #ffd166 !important; box-shadow: 0 0 30px #ffd16633; }
       .lang {
         display: flex;
         gap: 8px;
@@ -801,7 +813,7 @@
         </section>
         <section id="profile" class="section hidden">
           <h2 data-i18n="profile">Profile</h2>
-          <div class="tile">
+          <div id="profileHero" class="tile">
             <div class="achievement">
               <div class="icon">🏆</div>
               <div>
@@ -809,6 +821,7 @@
                 ><span class="muted" data-i18n="profileSub"
                   >Build streaks, complete sets and earn seasonal badges.</span
                 >
+                <span id="masterBadge" class="pill hidden" style="margin-top:10px">🏆 Master Collector · Season 1</span>
               </div>
             </div>
           </div>
@@ -838,10 +851,19 @@
         </section>
         <footer class="footer">
           <a href="/privacy.html" data-i18n="privacy">Privacy</a> ·
-          <a href="/terms.html" data-i18n="terms">Terms</a><br /><br />Sticker.pi Testnet · v1.0-rc.1
+          <a href="/terms.html" data-i18n="terms">Terms</a><br /><br />Sticker.pi Testnet · v1.0-rc.2
         </footer>
       </section>
     </main>
+    <div id="albumCelebration" class="celebration hidden" role="dialog" aria-modal="true" aria-labelledby="completionTitle">
+      <div class="celebrationCard">
+        <div class="celebrationIcon">🏆✨</div>
+        <h2 id="completionTitle">Album complete!</h2>
+        <p id="completionText" class="muted">You collected all 24 Season 1 stickers.</p>
+        <p id="completionReward"><b>Master Collector</b><br>+250 XP · +3 celebration packs</p>
+        <button id="closeCelebration" class="primary wide">Continue</button>
+      </div>
+    </div>
     <script>
       Pi.init({ version: "2.0", sandbox: true });
       let authData = null,
@@ -861,7 +883,8 @@
         roundStartedAt = 0,
         roundLocked = false,
         storageOnline = false,
-        feverMode = false;
+        feverMode = false,
+        lastStateError = "";
       const stickers = [
         ["🌙", "Moon Dream", "common"],
         ["🚀", "Pi Rocket", "rare"],
@@ -934,6 +957,10 @@
           silverRun: "Silver run!",
           goldRun: "Gold run!",
           runComplete: "Run complete",
+          albumComplete: "Album complete!",
+          albumCompleteText: "You collected all 24 Season 1 stickers.",
+          continue: "Continue",
+          completionReward: "Master Collector|+250 XP · +3 celebration packs",
           seconds: "seconds",
           gameHelp:
             "Find the target, then master two-sticker sequences. Fast, accurate taps score more. In the final 5-second Fever Mode, mistakes cost one second.",
@@ -997,6 +1024,10 @@
           silverRun: "银牌挑战！",
           goldRun: "金牌挑战！",
           runComplete: "挑战完成",
+          albumComplete: "图鉴完成！",
+          albumCompleteText: "你已收集第 1 赛季全部 24 张贴纸。",
+          continue: "继续",
+          completionReward: "收藏大师|+250 经验 · +3 庆祝卡包",
           seconds: "秒",
           gameHelp:
             "找到目标，然后按顺序完成双贴纸挑战。快速准确可获得更多分数。最后 5 秒进入狂热模式，错误会扣除 1 秒。",
@@ -1045,6 +1076,11 @@
         if (document.getElementById("combo")) updateCombo();
         if (document.getElementById("accuracy")) updateAccuracy();
         if (document.getElementById("app") && !document.getElementById("app").classList.contains("hidden")) render();
+        document.getElementById("completionTitle").textContent = dict[l].albumComplete;
+        document.getElementById("completionText").textContent = dict[l].albumCompleteText;
+        document.getElementById("closeCelebration").textContent = dict[l].continue;
+        const reward=dict[l].completionReward.split("|");
+        document.getElementById("completionReward").innerHTML=`<b>${reward[0]}</b><br>${reward[1]}`;
       }
       setLang(lang());
       function show(id) {
@@ -1109,10 +1145,14 @@
           ? dict[lang()].synced
           : "device save";
         renderStats();
+        const isMaster=(player.badges||[]).includes("master_collector_s1");
+        document.getElementById("masterBadge").classList.toggle("hidden",!isMaster);
+        document.getElementById("profileHero").classList.toggle("masterFrame",isMaster);
         saveLocal();
       }
-      async function stateApi(action = "load", payload = {}) {
+      async function stateApi(action = "load", payload = {}, retry = true) {
         if (!authData) return;
+        lastStateError = "";
         try {
           const r = await fetch("/api/state", {
             method: "POST",
@@ -1135,8 +1175,17 @@
             render();
             return d;
           }
-        } catch {}
+          lastStateError = d.error || `Request failed (${r.status})`;
+          if (retry && (r.status === 409 || r.status === 503)) {
+            await new Promise(resolve => setTimeout(resolve, 650));
+            return stateApi(action, payload, false);
+          }
+        } catch (error) { lastStateError = error?.message || "Network error"; }
         return null;
+      }
+      function showAlbumCelebration() {
+        document.getElementById("albumCelebration").classList.remove("hidden");
+        if (navigator.vibrate) navigator.vibrate([70,40,100,40,140]);
       }
       function persist() {
         render();
@@ -1439,7 +1488,8 @@
             : `Score ${gameScore} • Accuracy ${accuracy}% • Best combo x${bestCombo} • +${d.xp} XP${reward}`;
         } else {
           document.getElementById("gameResult").textContent =
-            "Result could not be verified. Your saved progress was not changed.";
+            (lang() === "zh" ? "结果无法验证，进度未更改。" : "Result could not be verified. Your saved progress was not changed.") +
+            (lastStateError ? ` (${lastStateError})` : "");
         }
       }
       function weightedSticker() {
@@ -1477,6 +1527,7 @@
         button.disabled = false;
         button.textContent = dict[lang()].open;
         if (!d?.reveal) return;
+        if (d.albumCompleted) showAlbumCelebration();
         const box = document.getElementById("packReveal");
         box.innerHTML = "";
         const cards = d.cards || d.reveal.map((index) => ({ index, isNew: false }));
@@ -1568,6 +1619,10 @@
           loadLocal();
           render();
           await stateApi("load");
+          if (uniqueCount() === 24 && !(player.badges || []).includes("master_collector_s1")) {
+            const completion = await stateApi("claim_album_reward");
+            if (completion?.albumCompleted) showAlbumCelebration();
+          }
           await recoverIncomplete();
         } catch (e) {
           alert(e.message);
@@ -1623,6 +1678,7 @@
       document.getElementById("payBtn").onclick = buyPack;
       document.getElementById("startGameBtn").onclick = startGame;
       document.getElementById("openPackBtn").onclick = openPack;
+      document.getElementById("closeCelebration").onclick = () => document.getElementById("albumCelebration").classList.add("hidden");
       renderAlbum();
     </script>
   </body>

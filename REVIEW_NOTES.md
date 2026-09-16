@@ -15,6 +15,7 @@ Sticker.pi is a short-session skill game and collectible album for Pi users. Pla
 7. Optionally purchase the 0.01 Test-Pi Bonus Pack and open it.
 8. Close and reopen the app to verify server-side persistence.
 9. Switch between English and Simplified Chinese.
+10. Completing 24/24 grants the one-time Master Collector badge, gold profile frame, 250 XP and three celebration packs.
 
 ## Security and persistence
 
@@ -23,6 +24,7 @@ Sticker.pi is a short-session skill game and collectible album for Pi users. Pla
 - Runs require a short-lived server-issued identifier and undergo duration and plausibility checks.
 - Player mutations are serialized with a per-player Redis lock.
 - Run rewards, pack openings and paid-pack grants are idempotent.
+- The album-completion reward is validated and granted once by the server.
 - Payment amount, direction, network, user, memo, metadata, transaction and final Pi status are validated server-side.
 - Sensitive credentials are Vercel environment variables and are not present in the repository or browser bundle.
 
