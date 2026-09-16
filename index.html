@@ -827,7 +827,7 @@
         </section>
         <footer class="footer">
           <a href="/privacy.html">Privacy</a> · <a href="/terms.html">Terms</a
-          ><br /><br />Sticker.pi Testnet · v0.7.1
+          ><br /><br />Sticker.pi Testnet · v0.7.2
         </footer>
       </section>
     </main>
@@ -1299,7 +1299,14 @@
           roundLocked = true;
           gameMisses++;
           gameCombo = 0;
-          if (feverMode) gameSeconds = Math.max(0, gameSeconds - 1);
+          if (feverMode) {
+            gameSeconds = Math.max(0, gameSeconds - 1);
+            if (gameSeconds === 0) {
+              document.getElementById("timer").textContent = "0";
+              finishGame();
+              return;
+            }
+          }
           document.getElementById("timer").textContent = gameSeconds;
           updateAccuracy();
           updateCombo();
