@@ -463,12 +463,13 @@
       }
       .packReveal {
         display: grid;
-        grid-template-columns: repeat(3, minmax(108px, 1fr));
+        grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 10px;
         margin-top: 12px;
-        overflow-x: auto;
-        padding-bottom: 4px;
       }
+      .packReveal .stickerCard { min-width: 0; padding: 10px 5px; }
+      .packReveal .stickerArt { font-size: clamp(38px, 12vw, 56px); }
+      .packReveal .stickerName { font-size: clamp(12px, 4vw, 16px); overflow-wrap: anywhere; }
       .reveal {
         animation: pop 0.45s ease both;
       }
@@ -706,7 +707,7 @@
             <div id="gameGrid" class="gameGrid"></div>
             <div id="roundMsg" class="roundMsg muted"></div>
             <div class="medals">
-              <span>🥉 15</span><span>🥈 30</span><span>🥇 45</span>
+              <span>🥉 15</span><span>🥈 25</span><span>🥇 40</span>
             </div>
             <button
               id="startGameBtn"
@@ -827,7 +828,7 @@
         </section>
         <footer class="footer">
           <a href="/privacy.html">Privacy</a> · <a href="/terms.html">Terms</a
-          ><br /><br />Sticker.pi Testnet · v0.8
+          ><br /><br />Sticker.pi Testnet · v0.8.1
         </footer>
       </section>
     </main>
@@ -1367,9 +1368,9 @@
         document.getElementById("goalName").classList.remove("hidden");
         document.getElementById("goalEmoji").textContent = "🏁";
         document.getElementById("goalName").textContent =
-          gameScore >= 45
+          gameScore >= 40
             ? "Gold run!"
-            : gameScore >= 30
+            : gameScore >= 25
               ? "Silver run!"
               : gameScore >= 15
                 ? "Bronze run!"
