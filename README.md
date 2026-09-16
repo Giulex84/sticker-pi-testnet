@@ -13,16 +13,17 @@ The Testnet build is intentionally focused on retention, social collectability a
 - Pi SDK authentication (`username` + `payments`)
 - Verified User-to-App Test-Pi purchase flow
 - Server-side payment validation and completion
-- Playable 20-second **Sticker Rush** daily challenge
+- Playable 30-second skill-based **Sticker Catch** daily challenge
 - XP, levels and daily streaks
 - 24-sticker collection with rarity tiers
 - Pack opening with duplicates tracked for future trading
-- Daily quest structure
+- Server-verified UTC daily quests and streaks
 - Profile statistics and progression
 - English and Simplified Chinese UI foundation
 - Responsive mobile-first interface
 - Privacy and Terms pages
-- Optional persistent player storage through Upstash Redis REST
+- Authoritative player state through Upstash Redis REST
+- Idempotent run, pack-opening and paid-pack rewards
 
 ## Product baseline
 
@@ -41,12 +42,12 @@ Sticker.pi should keep the strongest patterns observed in high-engagement Pi eco
 
 ## Storage
 
-Persistent state is optional during early Testnet development. To enable cloud sync on Vercel, configure:
+Persistent server storage is required for gameplay rewards. Configure on Vercel:
 
 - `UPSTASH_REDIS_REST_URL`
 - `UPSTASH_REDIS_REST_TOKEN`
 
-When unavailable, the client keeps a local device copy so gameplay remains testable. Before Mainnet, persistent server storage is required.
+Local storage is only a display cache. XP, packs, inventory, daily progress and payment entitlements are awarded by authenticated server actions.
 
 ## Mainnet policy
 
@@ -56,8 +57,7 @@ A2U is **not** required simply to associate the future `sticker.pi` domain. A2U 
 
 ## Planned milestones
 
-- Persistent cloud state enabled in production Testnet
-- Server-authoritative challenge validation and reward limits
+- Stronger challenge telemetry and adaptive anti-cheat limits
 - Safer duplicate exchange/matching
 - Seasonal collections and leaderboard
 - Limited community sticker drops
