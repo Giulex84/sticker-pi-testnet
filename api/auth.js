@@ -1,5 +1,5 @@
 import {verifyPiUser,apiError} from '../lib/pi.js';
-import {grantPaidPack} from '../lib/store.js';
+import {grantPaidPack,rateLimit} from '../lib/store.js';
 
 const PI_API_BASE='https://api.minepi.com/v2';
 const AMOUNT=0.01;
@@ -30,6 +30,7 @@ export default async function handler(req,res){
   if(req.method!=='POST'){res.setHeader('Allow','POST');return res.status(405).json({success:false,error:'Method not allowed'})}
   try{
     const user=await verifyPiUser(req);
+    await rateLimit(user.uid,'payment',20,60);
     const body=req.body||{};
     if(!body.action)return res.status(200).json({success:true,user:{uid:user.uid,username:user.username}});
     if(!process.env.PI_API_KEY)return res.status(503).json({success:false,error:'Payment service unavailable'});

@@ -837,8 +837,8 @@
           </div>
         </section>
         <footer class="footer">
-          <a href="/privacy.html">Privacy</a> · <a href="/terms.html">Terms</a
-          ><br /><br />Sticker.pi Testnet · v0.9
+          <a href="/privacy.html" data-i18n="privacy">Privacy</a> ·
+          <a href="/terms.html" data-i18n="terms">Terms</a><br /><br />Sticker.pi Testnet · v1.0-rc.1
         </footer>
       </section>
     </main>
@@ -889,7 +889,7 @@
         ["⭐", "Founder Star", "legendary"],
       ];
       let player = {
-        version: 3,
+        version: 4,
         level: 1,
         xp: 0,
         streak: 0,
@@ -923,6 +923,17 @@
           daily: "Daily Challenge",
           rush: "Sticker Catch",
           score: "Score",
+          combo: "Combo",
+          accuracy: "Accuracy",
+          synced: "☁ synced",
+          locked: "Locked",
+          noDupes: "No duplicates yet. Open packs to build trade inventory.",
+          privacy: "Privacy",
+          terms: "Terms",
+          bronzeRun: "Bronze run!",
+          silverRun: "Silver run!",
+          goldRun: "Gold run!",
+          runComplete: "Run complete",
           seconds: "seconds",
           gameHelp:
             "Find the target, then master two-sticker sequences. Fast, accurate taps score more. In the final 5-second Fever Mode, mistakes cost one second.",
@@ -975,6 +986,17 @@
           daily: "每日挑战",
           rush: "贴纸捕捉",
           score: "分数",
+          combo: "连击",
+          accuracy: "准确率",
+          synced: "☁ 已同步",
+          locked: "未解锁",
+          noDupes: "暂无重复贴纸。开启卡包以建立交换库存。",
+          privacy: "隐私政策",
+          terms: "服务条款",
+          bronzeRun: "铜牌挑战！",
+          silverRun: "银牌挑战！",
+          goldRun: "金牌挑战！",
+          runComplete: "挑战完成",
           seconds: "秒",
           gameHelp:
             "找到目标，然后按顺序完成双贴纸挑战。快速准确可获得更多分数。最后 5 秒进入狂热模式，错误会扣除 1 秒。",
@@ -1020,6 +1042,9 @@
         document.getElementById("zhBtn").classList.toggle("active", l === "zh");
         if (!gameTimer && document.getElementById("goalName"))
           document.getElementById("goalName").textContent = dict[l].ready;
+        if (document.getElementById("combo")) updateCombo();
+        if (document.getElementById("accuracy")) updateAccuracy();
+        if (document.getElementById("app") && !document.getElementById("app").classList.contains("hidden")) render();
       }
       setLang(lang());
       function show(id) {
@@ -1056,7 +1081,7 @@
             player = {
               ...player,
               ...p,
-              version: 3,
+              version: 4,
               daily: { ...player.daily, ...(p.daily || {}) },
               stats: { ...player.stats, ...(p.stats || {}) },
             };
@@ -1081,7 +1106,7 @@
         document.getElementById("q3").textContent =
           Math.min(3, player.daily?.newUnique || 0) + "/3";
         document.getElementById("storageFlag").textContent = storageOnline
-          ? "☁ synced"
+          ? dict[lang()].synced
           : "device save";
         renderStats();
         saveLocal();
@@ -1103,7 +1128,7 @@
             player = {
               ...player,
               ...d.player,
-              version: 3,
+              version: 4,
               daily: { ...player.daily, ...(d.player.daily || {}) },
               stats: { ...player.stats, ...(d.player.stats || {}) },
             };
@@ -1123,7 +1148,7 @@
           const c = Number(player.collection?.[i] || 0);
           const el = document.createElement("div");
           el.className = "stickerCard" + (c ? "" : " locked");
-          el.innerHTML = `<span class="count">${c || "?"}</span><div class="stickerArt">${c ? s[0] : "❔"}</div><div class="stickerName">${c ? s[1] : "Locked"}</div><div class="rarity">${c ? s[2] : ""}</div>`;
+          el.innerHTML = `<span class="count">${c || "?"}</span><div class="stickerArt">${c ? s[0] : "❔"}</div><div class="stickerName">${c ? s[1] : dict[lang()].locked}</div><div class="rarity">${c ? s[2] : ""}</div>`;
           g.appendChild(el);
         });
         document.getElementById("albumProgress").textContent =
@@ -1141,7 +1166,7 @@
                   `<div class="quest"><span>${stickers[i][0]} ${stickers[i][1]}</span><span class="pill">+${n}</span></div>`,
               )
               .join("")
-          : '<p class="muted">No duplicates yet. Open packs to build trade inventory.</p>';
+          : `<p class="muted">${dict[lang()].noDupes}</p>`;
       }
       function renderStats() {
         document.getElementById("playsValue").textContent =
@@ -1252,13 +1277,13 @@
       }
       function updateCombo() {
         document.getElementById("combo").textContent =
-          (feverMode ? "🔥 " : "") + "Combo x" + gameCombo;
+          (feverMode ? "🔥 " : "") + dict[lang()].combo + " x" + gameCombo;
       }
       function updateAccuracy() {
         const attempts = gameHits + gameMisses;
         const accuracy = attempts ? Math.round((gameHits / attempts) * 100) : 100;
         document.getElementById("accuracy").textContent =
-          (lang() === "zh" ? "准确率 " : "Accuracy ") + accuracy + "%";
+          dict[lang()].accuracy + " " + accuracy + "%";
       }
       function tapTarget(i, b) {
         if (!gameTimer || roundLocked) return;
@@ -1328,17 +1353,28 @@
           setTimeout(chooseTarget, 220);
         }
       }
-      function startGame() {
+      async function startGame() {
         if (gameTimer) return;
+        const startButton = document.getElementById("startGameBtn");
+        startButton.disabled = true;
+        document.getElementById("gameResult").textContent =
+          lang() === "zh" ? "正在准备安全挑战…" : "Preparing verified run…";
+        const started = await stateApi("start_run");
+        if (!started?.runId) {
+          startButton.disabled = false;
+          document.getElementById("gameResult").textContent =
+            lang() === "zh"
+              ? "无法开始挑战，请稍后重试。"
+              : "Run could not start. Please try again.";
+          return;
+        }
         clearRoundTimer();
         gameScore = 0;
         gameCombo = 0;
         bestCombo = 0;
         gameHits = 0;
         gameMisses = 0;
-        currentRunId =
-          globalThis.crypto?.randomUUID?.() ||
-          `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+        currentRunId = started.runId;
         gameSeconds = 30;
         feverMode = false;
         document.getElementById("gameBox").classList.remove("fever");
@@ -1379,12 +1415,12 @@
         document.getElementById("goalEmoji").textContent = "🏁";
         document.getElementById("goalName").textContent =
           gameScore >= 40
-            ? "Gold run!"
+            ? dict[lang()].goldRun
             : gameScore >= 25
-              ? "Silver run!"
+              ? dict[lang()].silverRun
               : gameScore >= 15
-                ? "Bronze run!"
-                : "Run complete";
+                ? dict[lang()].bronzeRun
+                : dict[lang()].runComplete;
         const attempts = gameHits + gameMisses;
         const accuracy = attempts ? Math.round((gameHits / attempts) * 100) : 100;
         document.getElementById("gameResult").textContent = "Saving verified result…";
@@ -1398,8 +1434,9 @@
         });
         if (d) {
           const reward = d.packGranted ? " • +1 daily pack 🎁" : "";
-          document.getElementById("gameResult").textContent =
-            `Score ${gameScore} • Accuracy ${accuracy}% • Best combo x${bestCombo} • +${d.xp} XP${reward}`;
+          document.getElementById("gameResult").textContent = lang() === "zh"
+            ? `分数 ${gameScore} • 准确率 ${accuracy}% • 最高连击 x${bestCombo} • +${d.xp} 经验${d.packGranted ? " • +1 每日卡包 🎁" : ""}`
+            : `Score ${gameScore} • Accuracy ${accuracy}% • Best combo x${bestCombo} • +${d.xp} XP${reward}`;
         } else {
           document.getElementById("gameResult").textContent =
             "Result could not be verified. Your saved progress was not changed.";

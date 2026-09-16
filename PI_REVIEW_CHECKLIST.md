@@ -13,12 +13,17 @@
 - [x] Terms of Service available
 - [x] English / Chinese UI foundation
 - [x] Playable core loop available
+- [x] Server-authoritative player state and UTC daily reset
+- [x] Server-issued run identifiers and plausible-result checks
+- [x] Idempotent run, pack and payment rewards
+- [x] Per-player mutation lock and API rate limits
+- [x] Payment recovery callback tested
 
 ## Before Mainnet repository is created
 
-- [ ] Enable persistent server storage
-- [ ] Make rewards and progression server-authoritative
-- [ ] Add request throttling / anti-abuse controls
+- [x] Enable persistent server storage
+- [x] Make rewards and progression server-authoritative
+- [x] Add baseline request throttling / anti-abuse controls
 - [ ] Add safe trade matching with server-side ownership checks
 - [ ] Add seasonal collection and leaderboard rules
 - [ ] Audit every Testnet-only constant and switch Mainnet SDK to `sandbox:false`
@@ -35,9 +40,18 @@ A2U is not treated as a domain-claim shortcut. It should only be enabled when cu
 
 1. Open Sticker.pi in Pi Browser.
 2. Authenticate using Pi.
-3. Start Sticker Rush and finish a 20-second run.
-4. Earn XP; score 8+ to receive a gameplay pack.
+3. Start Sticker Catch and finish a 30-second run.
+4. Earn XP; score 25+ to receive the once-per-UTC-day gameplay pack.
 5. Open a pack and view the Album.
 6. Review duplicate tracking in Trade.
 7. Optionally purchase the 0.01 Test-Pi bonus pack.
 8. Open Profile to see progression statistics.
+
+## Release candidate gates
+
+- [x] 0.01 Test-Pi purchase grants exactly one server-side pack
+- [x] Pack reveal updates XP, collection and duplicates server-side
+- [x] English and Simplified Chinese core flows checked on Pi Browser
+- [ ] Verify UTC reset and streak increment across a real day boundary
+- [ ] Re-test one complete run after the v1.0-rc server-issued run change
+- [ ] Freeze the accepted commit before creating the separate Mainnet repository

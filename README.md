@@ -24,6 +24,11 @@ The Testnet build is intentionally focused on retention, social collectability a
 - Privacy and Terms pages
 - Authoritative player state through Upstash Redis REST
 - Idempotent run, pack-opening and paid-pack rewards
+- Server-issued run tickets, per-player mutation locks and API rate limits
+
+## Release status
+
+`v1.0-rc.1` is the Testnet release candidate. Before it is frozen, it must pass one real UTC day-boundary test and one complete Sticker Catch run using the server-issued run flow.
 
 ## Product baseline
 
@@ -67,3 +72,5 @@ A2U is **not** required simply to associate the future `sticker.pi` domain. A2U 
 ## Deployment
 
 Hosted on Vercel. The Pi Developer Portal Testnet app must point only to the dedicated Testnet deployment.
+
+Daily state is based on UTC and resets at `00:00 UTC`; it is not a rolling 24-hour timer.
