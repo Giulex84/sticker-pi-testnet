@@ -1,4 +1,5 @@
 import {verifyPiUser,apiError} from '../lib/pi.js';
+import {grantPaidPack} from '../lib/store.js';
 
 const PI_API_BASE='https://api.minepi.com/v2';
 const AMOUNT=0.01;
@@ -46,6 +47,7 @@ export default async function handler(req,res){
     if(!p.status?.developer_completed)await complete(paymentId,realTxid,process.env.PI_API_KEY);
     p=await getPayment(paymentId,process.env.PI_API_KEY);
     if(!validPayment(p,user.uid)||!p.status?.developer_completed||!p.status?.transaction_verified)return res.status(409).json({success:false,pending:true,error:'Payment not fully verified yet'});
-    return res.status(200).json({success:true,completed:true,product:PRODUCT,paymentId});
+    const grant=await grantPaidPack(user.uid,user.username,paymentId);
+    return res.status(200).json({success:true,completed:true,product:PRODUCT,paymentId,player:grant.player,alreadyGranted:grant.alreadyGranted});
   }catch(error){return apiError(res,error)}
 }
