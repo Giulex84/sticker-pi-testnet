@@ -1,39 +1,37 @@
 # Sticker.pi Testnet — Reviewer Notes
 
-## Purpose
+## Review build
 
-Sticker.pi is a short-session skill game and collectible album for Pi users. Players complete a 30-second Sticker Catch challenge, earn XP and a limited daily pack, open three-sticker packs, and build a 24-sticker collection. Duplicate trading is visibly marked as a future feature and is not active.
+Version: **v1.0.0**
+
+URL: https://sticker-pi-testnet.vercel.app
+
+Sticker.pi is a short-session skill game and collectible album. Players complete a 30-second Sticker Catch challenge, earn server-verified progression, open three-sticker packs and build a 24-sticker collection.
 
 ## Recommended review path
 
 1. Open the app in Pi Browser and authenticate with Pi.
-2. Start Sticker Catch and complete one 30-second run.
-3. Review the resulting score, accuracy, combo, XP and daily quest progress.
+2. Complete one 30-second Sticker Catch run.
+3. Review score, accuracy, combo, XP and daily quest progress.
 4. A score of 25 or higher grants at most one gameplay pack per UTC day.
-5. Open a pack and review the progressive reveal, rarity, NEW/DUPLICATE state and Album update.
-6. Open Trade to confirm that duplicates are tracked without enabling peer-to-peer transfers.
-7. Optionally purchase the 0.01 Test-Pi Bonus Pack and open it.
-8. Close and reopen the app to verify server-side persistence.
+5. Open a pack and review rarity, NEW/DUPLICATE state and Album progress.
+6. Open Trade and confirm it is marked “Coming soon”; no transfer is available.
+7. Optionally purchase the 0.01 Test-Pi Bonus Pack.
+8. Close and reopen the app to confirm server-side persistence.
 9. Switch between English and Simplified Chinese.
-10. Completing 24/24 grants the one-time Master Collector badge, gold profile frame, 250 XP and three celebration packs.
 
 ## Security and persistence
 
 - Pi access tokens are verified server-side through `/v2/me`.
 - Important state is authoritative in Upstash Redis; local storage is only a display cache.
-- Runs require a short-lived server-issued identifier and undergo duration and plausibility checks.
-- Player mutations are serialized with a per-player Redis lock.
-- Run rewards, pack openings and paid-pack grants are idempotent.
-- The album-completion reward is validated and granted once by the server.
-- Payment amount, direction, network, user, memo, metadata, transaction and final Pi status are validated server-side.
-- Sensitive credentials are Vercel environment variables and are not present in the repository or browser bundle.
+- Runs require a short-lived server-issued identifier and plausibility checks.
+- Player mutations use per-player Redis locks.
+- Run, pack and paid-pack rewards are idempotent.
+- Payment user, direction, Testnet network, amount, memo, metadata, transaction and final status are verified server-side.
+- Credentials are server-side Vercel environment variables and are not present in the browser bundle.
 
 ## Intentional limitations
 
-- This is a Pi Testnet build and uses `sandbox: true` and Test-Pi only.
-- Peer-to-peer trading, A2U rewards, leaderboards and Mainnet monetization are not active.
-- Emoji artwork is temporary Testnet artwork and will be replaced with original production assets before a polished Mainnet launch.
-
-## Reset rules
-
-Daily quests and the daily gameplay-pack limit reset at `00:00 UTC`. Streak progression is calculated from server UTC dates, not from the device clock.
+- Peer-to-peer exchange, leaderboards and Mainnet monetization are not active.
+- The controlled A2U tester reward is hidden from ordinary use and depends on Pi Platform authorization.
+- Test-Pi and Testnet progression have no guaranteed Mainnet or monetary value.
