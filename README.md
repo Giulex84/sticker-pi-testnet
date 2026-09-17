@@ -1,81 +1,63 @@
 # Sticker.pi Testnet
 
-Sticker.pi is a Pi Network social collectible game designed for short, repeatable sessions and long-term collection goals.
+Sticker.pi Testnet is the isolated testing build of the Pi Network collectible skill game.
 
-## Core loop
+## Test release
 
-`play → earn XP/packs → open packs → collect → complete sets → trade duplicates → return tomorrow`
+Current release: **v1.0.0**
 
-The Testnet build is intentionally focused on retention, social collectability and safe Pi integration before any Mainnet economy is introduced.
+Testnet URL: https://sticker-pi-testnet.vercel.app
 
-## Current Testnet features
+Testnet and Mainnet use separate repositories, Vercel projects, Pi app credentials, payment products and persistent data.
 
-- Pi SDK authentication (`username` + `payments`)
-- Verified User-to-App Test-Pi purchase flow
-- Server-side payment validation and completion
-- Playable 30-second skill-based **Sticker Catch** daily challenge
-- XP, levels and daily streaks
-- 24-sticker collection with rarity tiers
-- Pack opening with duplicates tracked for future trading
-- Server-verified UTC daily quests and streaks
-- Profile statistics and progression
-- English and Simplified Chinese UI foundation
-- Responsive mobile-first interface
-- Privacy and Terms pages
-- Authoritative player state through Upstash Redis REST
-- Idempotent run, pack-opening and paid-pack rewards
-- Server-issued run tickets, per-player mutation locks and API rate limits
+## Active Testnet features
 
-## Release status
+- Pi SDK authentication with `username` and `payments` scopes
+- Verified 0.01 Test-Pi User-to-App Bonus Pack purchase
+- Server-side payment approval, completion, recovery and validation
+- 30-second Sticker Catch challenge
+- Server-authoritative XP, levels, daily streaks, quests, packs and inventory
+- 24-sticker album with rarity and duplicate tracking
+- One-time server-verified Master Collector reward
+- Idempotent runs, pack openings and payment fulfillment
+- Per-player mutation locks and API rate limits
+- English and Simplified Chinese interface
+- Privacy Policy and Terms of Service
 
-`v1.0-rc.2` is the Testnet release candidate. Before it is frozen, it must pass one real UTC day-boundary test and one complete Sticker Catch run using the server-issued run flow.
+## Coming soon
 
-Completing all 24 Season 1 stickers grants the one-time, server-verified **Master Collector** badge, a gold profile frame, 250 XP and three celebration packs.
+Peer-to-peer duplicate exchange is **not active**. The Trade screen is informational and marked “Coming soon”.
 
-## Product baseline
+## Controlled A2U test
 
-Sticker.pi should keep the strongest patterns observed in high-engagement Pi ecosystem apps while remaining original:
+The five-user Test-Pi A2U reward is a controlled developer test, not part of the normal product path. Its card is hidden during ordinary use and is shown only through the explicit `?claim=a2u` test link. Execution requires the paired Testnet app API key, a dedicated Testnet app-wallet seed and Pi Platform A2U authorization.
 
-1. Fast onboarding through Pi identity.
-2. Immediate action after login; no empty dashboard.
-3. Short sessions that feel rewarding in under one minute.
-4. A reason to return every day: streaks, quests and limited progression.
-5. Visible collection progress and rarity.
-6. Duplicate items that create future social/trading utility.
-7. Seasonal progression, leaderboards and community drops.
-8. Mobile-first UI with strong visual feedback.
-9. Internationalization from the start; English and Chinese first, with additional locale files planned.
-10. Pi payments tied to clear in-app utility rather than speculative promises.
+Never use a personal wallet passphrase or Mainnet wallet seed.
 
-## Storage
+## Pi integration boundaries
 
-Persistent server storage is required for gameplay rewards. Configure on Vercel:
+- Pi SDK: `sandbox: true`
+- U2A network: `Pi Testnet`
+- U2A product: `sticker_bonus_pack_testnet_v1`
+- U2A amount: `0.01 Test-Pi`
+- Testnet data is not migrated to Mainnet
+- Wallet passphrases, private keys and seed phrases are never requested from users
 
+## Required Vercel variables
+
+Core app:
+
+- `PI_API_KEY` — API key belonging only to the paired Testnet app
 - `UPSTASH_REDIS_REST_URL`
 - `UPSTASH_REDIS_REST_TOKEN`
 
-Local storage is only a display cache. XP, packs, inventory, daily progress and payment entitlements are awarded by authenticated server actions.
+Controlled A2U test only:
 
-## Mainnet policy
+- `PI_WALLET_PRIVATE_SEED` — dedicated Testnet app-wallet seed; server-only
 
-Testnet and Mainnet remain separate deployments and repositories. Mainnet will use `sandbox:false`, Mainnet-specific credentials and a fresh payment/security review.
+## Public documents
 
-A2U is **not** required simply to associate the future `sticker.pi` domain. A2U rewards, if enabled later, must have real product utility, anti-abuse limits and current Pi platform support. They will not be added merely to satisfy a checklist.
+- Privacy: https://sticker-pi-testnet.vercel.app/privacy.html
+- Terms: https://sticker-pi-testnet.vercel.app/terms.html
 
-## Planned milestones
-
-- Stronger challenge telemetry and adaptive anti-cheat limits
-- Daily and weekly leaderboards using a shared server challenge seed
-- Asynchronous player duels using the same verified challenge
-- Weekly tournaments with cosmetic and collectible rewards; no Pi entry fees or Pi prizes are planned for the initial competitive release
-- Safer duplicate exchange/matching
-- Seasonal collections and leaderboard
-- Limited community sticker drops
-- More languages (planned architecture: English, Chinese, then additional locales based on user demand)
-- Mainnet hardening and separate Mainnet deployment
-
-## Deployment
-
-Hosted on Vercel. The Pi Developer Portal Testnet app must point only to the dedicated Testnet deployment.
-
-Daily state is based on UTC and resets at `00:00 UTC`; it is not a rolling 24-hour timer.
+Daily state resets at `00:00 UTC`; it is not a rolling 24-hour timer.
