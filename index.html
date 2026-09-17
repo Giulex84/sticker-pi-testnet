@@ -760,6 +760,17 @@
               ><span id="q3" class="pill">0/3</span>
             </div>
           </div>
+          <div id="a2uReward" class="tile" style="margin-top: 12px">
+            <div class="pack">🎁</div>
+            <strong data-i18n="testerReward">Testnet tester reward</strong>
+            <p class="muted" data-i18n="testerRewardSub">
+              Claim a one-time 0.01 Test-Pi reward. Limited to five unique Testnet users.
+            </p>
+            <button id="a2uClaimBtn" class="primary wide" data-i18n="claimReward">
+              Claim 0.01 Test-Pi
+            </button>
+            <div id="a2uStatus" class="status"></div>
+          </div>
         </section>
         <section id="album" class="section hidden">
           <div class="top">
@@ -971,6 +982,9 @@
           q1: "Reach 20 points in Sticker Catch",
           q2: "Open a pack",
           q3: "Collect 3 unique stickers",
+          testerReward: "Testnet tester reward",
+          testerRewardSub: "Claim a one-time 0.01 Test-Pi reward. Limited to five unique Testnet users.",
+          claimReward: "Claim 0.01 Test-Pi",
           openPack: "Open a sticker pack",
           openPackSub:
             "Each pack contains 3 stickers. Duplicates become future trade fuel.",
@@ -1038,6 +1052,9 @@
           q1: "贴纸捕捉达到 20 分",
           q2: "开启一个卡包",
           q3: "收集 3 张不同贴纸",
+          testerReward: "测试网测试奖励",
+          testerRewardSub: "领取一次性 0.01 Test-Pi 奖励，仅限五位不同的测试网用户。",
+          claimReward: "领取 0.01 Test-Pi",
           openPack: "开启贴纸卡包",
           openPackSub: "每包包含 3 张贴纸。重复贴纸将用于未来交换。",
           open: "开启卡包",
@@ -1624,8 +1641,37 @@
             if (completion?.albumCompleted) showAlbumCelebration();
           }
           await recoverIncomplete();
+          if (new URLSearchParams(location.search).get("claim") === "a2u") {
+            setTimeout(() => document.getElementById("a2uReward")?.scrollIntoView({ behavior: "smooth", block: "center" }), 150);
+          }
         } catch (e) {
           alert(e.message);
+          b.disabled = false;
+        }
+      }
+      async function claimA2U() {
+        if (!authData?.accessToken) return;
+        const b = document.getElementById("a2uClaimBtn");
+        const status = document.getElementById("a2uStatus");
+        b.disabled = true;
+        status.textContent = lang() === "zh" ? "正在准备 Test-Pi 奖励…" : "Preparing the Test-Pi reward…";
+        try {
+          const r = await fetch("/api/a2u", {
+            method: "POST",
+            headers: {
+              Authorization: "Bearer " + authData.accessToken,
+              "Content-Type": "application/json",
+            },
+            body: "{}",
+          });
+          const d = await r.json();
+          if (!r.ok) throw new Error(d.error || "Reward failed");
+          status.textContent = d.alreadyClaimed
+            ? (lang() === "zh" ? "奖励已领取 ✓" : "Reward already claimed ✓")
+            : (lang() === "zh" ? `奖励已发送 ✓ 已完成 ${d.completed}/5` : `Reward sent ✓ ${d.completed}/5 completed`);
+          b.textContent = lang() === "zh" ? "已完成 ✓" : "Completed ✓";
+        } catch (e) {
+          status.textContent = e.message;
           b.disabled = false;
         }
       }
@@ -1676,6 +1722,7 @@
       document.getElementById("loginBtn").onclick = login;
       document.getElementById("logoutBtn").onclick = () => location.reload();
       document.getElementById("payBtn").onclick = buyPack;
+      document.getElementById("a2uClaimBtn").onclick = claimA2U;
       document.getElementById("startGameBtn").onclick = startGame;
       document.getElementById("openPackBtn").onclick = openPack;
       document.getElementById("closeCelebration").onclick = () => document.getElementById("albumCelebration").classList.add("hidden");
