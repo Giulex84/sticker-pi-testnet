@@ -1,1 +1,52 @@
-aW1wb3J0IFBpTmV0d29yayBmcm9tICdwaS1iYWNrZW5kJzsKaW1wb3J0IHt2ZXJpZnlQaVVzZXIsYXBpRXJyb3J9IGZyb20gJy4uL2xpYi9waS5qcyc7Cgpjb25zdCBVUkw9KHByb2Nlc3MuZW52LlVQU1RBU0hfUkVESVNfUkVTVF9VUkx8fCcnKS5yZXBsYWNlKC9cLyQvLCcnKTsKY29uc3QgVE9LRU49cHJvY2Vzcy5lbnYuVVBTVEFTSF9SRURJU19SRVNUX1RPS0VOfHwnJzsKY29uc3QgUFJFRklYPSdzdGlja2VyOmEydTp0ZXN0bmV0JzsKY29uc3QgTElNSVQ9NTsKY29uc3QgQU1PVU5UPTAuMDE7Cgphc3luYyBmdW5jdGlvbiByZWRpcyhhcmdzKXsKICBpZighVVJMfHwhVE9LRU4pe2NvbnN0IGU9bmV3IEVycm9yKCdSZXdhcmQgc3RvcmFnZSBpcyB1bmF2YWlsYWJsZScpO2Uuc3RhdHVzPTUwMzt0aHJvdyBlfQogIGNvbnN0IHI9YXdhaXQgZmV0Y2goVVJMLHttZXRob2Q6J1BPU1QnLGhlYWRlcnM6e0F1dGhvcml6YXRpb246YEJlYXJlciAke1RPS0VOfWAsJ0NvbnRlbnQtVHlwZSc6J2FwcGxpY2F0aW9uL2pzb24nfSxib2R5OkpTT04uc3RyaW5naWZ5KGFyZ3MpfSk7CiAgaWYoIXIub2spe2NvbnN0IGU9bmV3IEVycm9yKCdSZXdhcmQgc3RvcmFnZSByZXF1ZXN0IGZhaWxlZCcpO2Uuc3RhdHVzPTUwMzt0aHJvdyBlfQogIHJldHVybiAoYXdhaXQgci5qc29uKCkpPy5yZXN1bHQ7Cn0KYXN5bmMgZnVuY3Rpb24gdW5sb2NrKHRva2VuKXthd2FpdCByZWRpcyhbJ0VWQUwnLCJpZiByZWRpcy5jYWxsKCdnZXQnLEtFWVNbMV0pID09IEFSR1ZbMV0gdGhlbiByZXR1cm4gcmVkaXMuY2FsbCgnZGVsJyxLRVlTWzFdKSBlbHNlIHJldHVybiAwIGVuZCIsJzEnLGAke1BSRUZJWH06bG9ja2AsdG9rZW5dKS5jYXRjaCgoKT0+e30pfQoKZXhwb3J0IGRlZmF1bHQgYXN5bmMgZnVuY3Rpb24gaGFuZGxlcihyZXEscmVzKXsKICBpZihyZXEubWV0aG9kIT09J1BPU1QnKXtyZXMuc2V0SGVhZGVyKCdBbGxvdycsJ1BPU1QnKTtyZXR1cm4gcmVzLnN0YXR1cyg0MDUpLmpzb24oe3N1Y2Nlc3M6ZmFsc2UsZXJyb3I6J01ldGhvZCBub3QgYWxsb3dlZCd9KX0KICBsZXQgbG9ja1Rva2VuPScnOwogIHRyeXsKICAgIGNvbnN0IHVzZXI9YXdhaXQgdmVyaWZ5UGlVc2VyKHJlcSk7CiAgICBpZighcHJvY2Vzcy5lbnYuUElfQVBJX0tFWXx8IXByb2Nlc3MuZW52LlBJX1dBTExFVF9QUklWQVRFX1NFRUQpcmV0dXJuIHJlcy5zdGF0dXMoNTAzKS5qc29uKHtzdWNjZXNzOmZhbHNlLGVycm9yOidUZXN0ZXIgcmV3YXJkcyBhcmUgbm90IGNvbmZpZ3VyZWQnfSk7CiAgICBjb25zdCBjbGFpbUtleT1gJHtQUkVGSVh9OmNsYWltOiR7dXNlci51aWR9YDsKICAgIGNvbnN0IGV4aXN0aW5nUmF3PWF3YWl0IHJlZGlzKFsnR0VUJyxjbGFpbUtleV0pOwogICAgaWYoZXhpc3RpbmdSYXcpe2NvbnN0IGV4aXN0aW5nPUpTT04ucGFyc2UoZXhpc3RpbmdSYXcpO2lmKGV4aXN0aW5nLnN0YXR1cz09PSdjb21wbGV0ZWQnKXJldHVybiByZXMuc3RhdHVzKDIwMCkuanNvbih7c3VjY2Vzczp0cnVlLGFscmVhZHlDbGFpbWVkOnRydWUsY2xhaW06ZXhpc3Rpbmd9KX0KICAgIGxvY2tUb2tlbj1gJHt1c2VyLnVpZH06JHtEYXRlLm5vdygpfToke01hdGgucmFuZG9tKCl9YDsKICAgIGNvbnN0IGFjcXVpcmVkPWF3YWl0IHJlZGlzKFsnU0VUJyxgJHtQUkVGSVh9OmxvY2tgLGxvY2tUb2tlbiwnTlgnLCdQWCcsMTIwMDAwXSk7CiAgICBpZihhY3F1aXJlZCE9PSdPSycpcmV0dXJuIHJlcy5zdGF0dXMoNDA5KS5qc29uKHtzdWNjZXNzOmZhbHNlLGVycm9yOidBbm90aGVyIHRlc3RlciByZXdhcmQgaXMgYmVpbmcgcHJvY2Vzc2VkLiBQbGVhc2UgcmV0cnkgc2hvcnRseS4nfSk7CiAgICBjb25zdCByZWNpcGllbnRzPU51bWJlcihhd2FpdCByZWRpcyhbJ1NDQVJEJyxgJHtQUkVGSVh9OnJlY2lwaWVudHNgXSkpfHwwOwogICAgaWYocmVjaXBpZW50cz49TElNSVQpcmV0dXJuIHJlcy5zdGF0dXMoNDA5KS5qc29uKHtzdWNjZXNzOmZhbHNlLGNsb3NlZDp0cnVlLGVycm9yOidBbGwgZml2ZSB0ZXN0ZXIgcmV3YXJkcyBoYXZlIGJlZW4gY2xhaW1lZC4nfSk7CiAgICBsZXQgY2xhaW09ZXhpc3RpbmdSYXc/SlNPTi5wYXJzZShleGlzdGluZ1Jhdyk6e3N0YXR1czoncGVuZGluZycsdWlkOnVzZXIudWlkLHVzZXJuYW1lOnVzZXIudXNlcm5hbWUsY3JlYXRlZEF0Om5ldyBEYXRlKCkudG9JU09TdHJpbmcoKX07CiAgICBjb25zdCBwaT1uZXcgUGlOZXR3b3JrKHByb2Nlc3MuZW52LlBJX0FQSV9LRVkscHJvY2Vzcy5lbnYuUElfV0FMTEVUX1BSSVZBVEVfU0VFRCk7CiAgICBpZighY2xhaW0ucGF5bWVudElkKXsKICAgICAgY2xhaW0ucGF5bWVudElkPWF3YWl0IHBpLmNyZWF0ZVBheW1lbnQoe2Ftb3VudDpBTU9VTlQsbWVtbzonU3RpY2tlci5waSBUZXN0bmV0IHBpb25lZXIgcmV3YXJkJyxtZXRhZGF0YTp7cHVycG9zZTonbWFpbm5ldF9yZWFkaW5lc3NfYTJ1Jyx2ZXJzaW9uOjF9LHVpZDp1c2VyLnVpZH0pOwogICAgICBhd2FpdCByZWRpcyhbJ1NFVCcsY2xhaW1LZXksSlNPTi5zdHJpbmdpZnkoY2xhaW0pXSk7CiAgICB9CiAgICBsZXQgcGF5bWVudD1hd2FpdCBwaS5nZXRQYXltZW50KGNsYWltLnBheW1lbnRJZCk7CiAgICBpZihwYXltZW50LnVzZXJfdWlkIT09dXNlci51aWR8fHBheW1lbnQuZGlyZWN0aW9uIT09J2FwcF90b191c2VyJ3x8cGF5bWVudC5uZXR3b3JrIT09J1BpIFRlc3RuZXQnfHxOdW1iZXIocGF5bWVudC5hbW91bnQpIT09QU1PVU5UKXRocm93IE9iamVjdC5hc3NpZ24obmV3IEVycm9yKCdSZXdhcmQgcGF5bWVudCB2YWxpZGF0aW9uIGZhaWxlZCcpLHtzdGF0dXM6NDAwfSk7CiAgICBpZighcGF5bWVudC50cmFuc2FjdGlvbj8udHhpZCl7Y2xhaW0udHhpZD1hd2FpdCBwaS5zdWJtaXRQYXltZW50KGNsYWltLnBheW1lbnRJZCk7YXdhaXQgcmVkaXMoWydTRVQnLGNsYWltS2V5LEpTT04uc3RyaW5naWZ5KGNsYWltKV0pfQogICAgZWxzZSBjbGFpbS50eGlkPXBheW1lbnQudHJhbnNhY3Rpb24udHhpZDsKICAgIGlmKCFwYXltZW50LnN0YXR1cz8uZGV2ZWxvcGVyX2NvbXBsZXRlZClwYXltZW50PWF3YWl0IHBpLmNvbXBsZXRlUGF5bWVudChjbGFpbS5wYXltZW50SWQsY2xhaW0udHhpZCk7CiAgICBwYXltZW50PWF3YWl0IHBpLmdldFBheW1lbnQoY2xhaW0ucGF5bWVudElkKTsKICAgIGlmKCFwYXltZW50LnN0YXR1cz8uZGV2ZWxvcGVyX2NvbXBsZXRlZHx8IXBheW1lbnQuc3RhdHVzPy50cmFuc2FjdGlvbl92ZXJpZmllZCl0aHJvdyBPYmplY3QuYXNzaWduKG5ldyBFcnJvcignUmV3YXJkIHRyYW5zYWN0aW9uIGlzIG5vdCBmdWxseSB2ZXJpZmllZCcpLHtzdGF0dXM6NDA5fSk7CiAgICBjbGFpbT17Li4uY2xhaW0sc3RhdHVzOidjb21wbGV0ZWQnLHR4aWQ6cGF5bWVudC50cmFuc2FjdGlvbj8udHhpZHx8Y2xhaW0udHhpZCxjb21wbGV0ZWRBdDpuZXcgRGF0ZSgpLnRvSVNPU3RyaW5nKCl9OwogICAgYXdhaXQgcmVkaXMoWydTRVQnLGNsYWltS2V5LEpTT04uc3RyaW5naWZ5KGNsYWltKV0pOwogICAgYXdhaXQgcmVkaXMoWydTQUREJyxgJHtQUkVGSVh9OnJlY2lwaWVudHNgLHVzZXIudWlkXSk7CiAgICBjb25zdCBjb21wbGV0ZWQ9TnVtYmVyKGF3YWl0IHJlZGlzKFsnU0NBUkQnLGAke1BSRUZJWH06cmVjaXBpZW50c2BdKSl8fDA7CiAgICByZXR1cm4gcmVzLnN0YXR1cygyMDApLmpzb24oe3N1Y2Nlc3M6dHJ1ZSxhbHJlYWR5Q2xhaW1lZDpmYWxzZSxjb21wbGV0ZWQscmVtYWluaW5nOk1hdGgubWF4KDAsTElNSVQtY29tcGxldGVkKSxjbGFpbX0pOwogIH1jYXRjaChlcnJvcil7cmV0dXJuIGFwaUVycm9yKHJlcyxlcnJvcil9ZmluYWxseXtpZihsb2NrVG9rZW4pYXdhaXQgdW5sb2NrKGxvY2tUb2tlbil9Cn0K
+import PiBackend from 'pi-backend';
+import {verifyPiUser,apiError} from '../lib/pi.js';
+
+const URL=(process.env.UPSTASH_REDIS_REST_URL||'').replace(/\/$/,'');
+const TOKEN=process.env.UPSTASH_REDIS_REST_TOKEN||'';
+const PREFIX='sticker:a2u:testnet';
+const LIMIT=5;
+const AMOUNT=0.01;
+const PiNetwork=PiBackend.default||PiBackend;
+
+async function redis(args){
+  if(!URL||!TOKEN){const e=new Error('Reward storage is unavailable');e.status=503;throw e}
+  const r=await fetch(URL,{method:'POST',headers:{Authorization:`Bearer ${TOKEN}`,'Content-Type':'application/json'},body:JSON.stringify(args)});
+  if(!r.ok){const e=new Error('Reward storage request failed');e.status=503;throw e}
+  return (await r.json())?.result;
+}
+async function unlock(token){await redis(['EVAL',"if redis.call('get',KEYS[1]) == ARGV[1] then return redis.call('del',KEYS[1]) else return 0 end",'1',`${PREFIX}:lock`,token]).catch(()=>{})}
+
+export default async function handler(req,res){
+  if(req.method!=='POST'){res.setHeader('Allow','POST');return res.status(405).json({success:false,error:'Method not allowed'})}
+  let lockToken='';
+  try{
+    const user=await verifyPiUser(req);
+    if(!process.env.PI_API_KEY||!process.env.PI_WALLET_PRIVATE_SEED)return res.status(503).json({success:false,error:'Tester rewards are not configured'});
+    const claimKey=`${PREFIX}:claim:${user.uid}`;
+    const existingRaw=await redis(['GET',claimKey]);
+    if(existingRaw){const existing=JSON.parse(existingRaw);if(existing.status==='completed')return res.status(200).json({success:true,alreadyClaimed:true,claim:existing})}
+    lockToken=`${user.uid}:${Date.now()}:${Math.random()}`;
+    const acquired=await redis(['SET',`${PREFIX}:lock`,lockToken,'NX','PX',120000]);
+    if(acquired!=='OK')return res.status(409).json({success:false,error:'Another tester reward is being processed. Please retry shortly.'});
+    const recipients=Number(await redis(['SCARD',`${PREFIX}:recipients`]))||0;
+    if(recipients>=LIMIT)return res.status(409).json({success:false,closed:true,error:'All five tester rewards have been claimed.'});
+    let claim=existingRaw?JSON.parse(existingRaw):{status:'pending',uid:user.uid,username:user.username,createdAt:new Date().toISOString()};
+    const pi=new PiNetwork(process.env.PI_API_KEY,process.env.PI_WALLET_PRIVATE_SEED);
+    if(!claim.paymentId){
+      claim.paymentId=await pi.createPayment({amount:AMOUNT,memo:'Sticker.pi Testnet pioneer reward',metadata:{purpose:'mainnet_readiness_a2u',version:1},uid:user.uid});
+      await redis(['SET',claimKey,JSON.stringify(claim)]);
+    }
+    let payment=await pi.getPayment(claim.paymentId);
+    if(payment.user_uid!==user.uid||payment.direction!=='app_to_user'||payment.network!=='Pi Testnet'||Number(payment.amount)!==AMOUNT)throw Object.assign(new Error('Reward payment validation failed'),{status:400});
+    if(!payment.transaction?.txid){claim.txid=await pi.submitPayment(claim.paymentId);await redis(['SET',claimKey,JSON.stringify(claim)])}
+    else claim.txid=payment.transaction.txid;
+    if(!payment.status?.developer_completed)payment=await pi.completePayment(claim.paymentId,claim.txid);
+    payment=await pi.getPayment(claim.paymentId);
+    if(!payment.status?.developer_completed||!payment.status?.transaction_verified)throw Object.assign(new Error('Reward transaction is not fully verified'),{status:409});
+    claim={...claim,status:'completed',txid:payment.transaction?.txid||claim.txid,completedAt:new Date().toISOString()};
+    await redis(['SET',claimKey,JSON.stringify(claim)]);
+    await redis(['SADD',`${PREFIX}:recipients`,user.uid]);
+    const completed=Number(await redis(['SCARD',`${PREFIX}:recipients`]))||0;
+    return res.status(200).json({success:true,alreadyClaimed:false,completed,remaining:Math.max(0,LIMIT-completed),claim});
+  }catch(error){return apiError(res,error)}finally{if(lockToken)await unlock(lockToken)}
+}
