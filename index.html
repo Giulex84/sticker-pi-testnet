@@ -599,7 +599,7 @@
           <div class="logo">S</div>
           <div>
             <strong style="font-size: 22px">Sticker.pi</strong>
-            <div class="muted" data-i18n="tag">Play. Collect. Trade.</div>
+            <div class="muted" data-i18n="tag">Play. Collect. Complete.</div>
           </div>
         </div>
         <span class="badge">PI TESTNET</span>
@@ -614,7 +614,7 @@
           <h1 data-i18n="hero">Build your sticker world.</h1>
           <p class="muted" data-i18n="heroSub">
             Play fast challenges, open packs, complete albums and build a
-            collection other Pioneers will want to trade for.
+            collection you can grow and complete.
           </p>
           <button id="loginBtn" class="primary wide" data-i18n="login">
             Continue with Pi
@@ -761,7 +761,7 @@
               ><span id="q3" class="pill">0/3</span>
             </div>
           </div>
-          <div id="a2uReward" class="tile" style="margin-top: 12px">
+          <div id="a2uReward" class="tile hidden" style="margin-top: 12px">
             <div class="pack">🎁</div>
             <strong data-i18n="testerReward">Testnet tester reward</strong>
             <p class="muted" data-i18n="testerRewardSub">
@@ -808,9 +808,9 @@
           </div>
         </section>
         <section id="trade" class="section hidden">
-          <h2 data-i18n="trade">Trade</h2>
+          <h2 data-i18n="tradeComingSoon">Trade · Coming soon</h2>
           <div class="tile">
-            <strong data-i18n="safeTrade">Duplicate Exchange</strong>
+            <strong data-i18n="safeTrade">Duplicate tracking</strong>
             <p class="muted" data-i18n="safeTradeSub">
               Your duplicates are tracked now. Peer-to-peer exchange will open
               after server-side matching, limits and anti-abuse rules are
@@ -863,7 +863,7 @@
         </section>
         <footer class="footer">
           <a href="/privacy.html" data-i18n="privacy">Privacy</a> ·
-          <a href="/terms.html" data-i18n="terms">Terms</a><br /><br />Sticker.pi Testnet · v1.0-rc.2
+          <a href="/terms.html" data-i18n="terms">Terms</a><br /><br />Sticker.pi Testnet · v1.0.0
         </footer>
       </section>
     </main>
@@ -938,10 +938,10 @@
       };
       const dict = {
         en: {
-          tag: "Play. Collect. Trade.",
+          tag: "Play. Collect. Complete.",
           hero: "Build your sticker world.",
           heroSub:
-            "Play fast challenges, open packs, complete albums and build a collection other Pioneers will want to trade for.",
+            "Play fast challenges, open packs, complete albums and build a collection you can grow and complete.",
           login: "Continue with Pi",
           signed: "Signed in as",
           reset: "Reset view",
@@ -954,6 +954,7 @@
           album: "Album",
           packsNav: "Packs",
           trade: "Trade",
+          tradeComingSoon: "Trade · Coming soon",
           profile: "Profile",
           daily: "Daily Challenge",
           rush: "Sticker Catch",
@@ -962,7 +963,7 @@
           accuracy: "Accuracy",
           synced: "☁ synced",
           locked: "Locked",
-          noDupes: "No duplicates yet. Open packs to build trade inventory.",
+          noDupes: "No duplicates yet. Open packs to grow your collection.",
           privacy: "Privacy",
           terms: "Terms",
           bronzeRun: "Bronze run!",
@@ -988,12 +989,12 @@
           claimReward: "Claim 0.01 Test-Pi",
           openPack: "Open a sticker pack",
           openPackSub:
-            "Each pack contains 3 stickers. Duplicates become future trade fuel.",
+            "Each pack contains 3 stickers. Duplicates are securely tracked for a future exchange feature.",
           open: "Open pack",
           bonus: "Testnet Bonus Pack",
           bonusSub: "Buy one bonus pack for 0.01 Test-Pi. Testnet only.",
           buy: "Buy for 0.01 Test-Pi",
-          safeTrade: "Duplicate Exchange",
+          safeTrade: "Duplicate tracking",
           safeTradeSub:
             "Your duplicates are tracked now. Peer-to-peer exchange will open after server-side matching, limits and anti-abuse rules are finished.",
           tradeNotice:
@@ -1005,13 +1006,13 @@
           unique: "Unique stickers",
           roadmap: "Season roadmap",
           roadmapSub:
-            "Daily play → sticker sets → duplicate trading → seasonal leaderboard → limited community drops.",
+            "Daily play → sticker sets → future duplicate exchange → seasonal leaderboard → limited community drops.",
         },
         zh: {
-          tag: "玩 · 收集 · 交换",
+          tag: "玩 · 收集 · 完成",
           hero: "打造你的贴纸世界。",
           heroSub:
-            "完成快速挑战、开启卡包、完成图鉴，并打造其他 Pioneer 想要交换的收藏。",
+            "完成快速挑战、开启卡包、完成图鉴，并逐步完善你的收藏。",
           login: "使用 Pi 登录",
           signed: "当前账户",
           reset: "重置页面",
@@ -1024,6 +1025,7 @@
           album: "图鉴",
           packsNav: "卡包",
           trade: "交换",
+          tradeComingSoon: "交换 · 即将推出",
           profile: "个人资料",
           daily: "每日挑战",
           rush: "贴纸捕捉",
@@ -1032,7 +1034,7 @@
           accuracy: "准确率",
           synced: "☁ 已同步",
           locked: "未解锁",
-          noDupes: "暂无重复贴纸。开启卡包以建立交换库存。",
+          noDupes: "暂无重复贴纸。开启卡包以扩展你的收藏。",
           privacy: "隐私政策",
           terms: "服务条款",
           bronzeRun: "铜牌挑战！",
@@ -1057,12 +1059,12 @@
           testerRewardSub: "领取一次性 0.01 Test-Pi 奖励，仅限五位不同的测试网用户。",
           claimReward: "领取 0.01 Test-Pi",
           openPack: "开启贴纸卡包",
-          openPackSub: "每包包含 3 张贴纸。重复贴纸将用于未来交换。",
+          openPackSub: "每包包含 3 张贴纸。重复贴纸会被安全记录，供未来交换功能使用。",
           open: "开启卡包",
           bonus: "测试网奖励卡包",
           bonusSub: "使用 0.01 Test-Pi 购买一个奖励卡包，仅限测试网。",
           buy: "用 0.01 Test-Pi 购买",
-          safeTrade: "重复贴纸交换",
+          safeTrade: "重复贴纸记录",
           safeTradeSub:
             "重复贴纸现已记录。服务器匹配、限额与防滥用规则完成后将开放点对点交换。",
           tradeNotice:
@@ -1074,7 +1076,7 @@
           unique: "不同贴纸",
           roadmap: "赛季路线",
           roadmapSub:
-            "每日挑战 → 贴纸套装 → 重复交换 → 赛季排行榜 → 社区限定掉落。",
+            "每日挑战 → 贴纸套装 → 未来重复贴纸交换 → 赛季排行榜 → 社区限定掉落。",
         },
       };
       function lang() {
@@ -1643,7 +1645,9 @@
           }
           await recoverIncomplete();
           if (new URLSearchParams(location.search).get("claim") === "a2u") {
-            setTimeout(() => document.getElementById("a2uReward")?.scrollIntoView({ behavior: "smooth", block: "center" }), 150);
+            const reward = document.getElementById("a2uReward");
+            reward?.classList.remove("hidden");
+            setTimeout(() => reward?.scrollIntoView({ behavior: "smooth", block: "center" }), 150);
           }
         } catch (e) {
           alert(e.message);
