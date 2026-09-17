@@ -21,7 +21,9 @@ export default async function handler(req,res){
   let lockToken='';
   try{
     const user=await verifyPiUser(req);
-    if(!process.env.PI_API_KEY||!process.env.PI_WALLET_PRIVATE_SEED)return res.status(503).json({success:false,error:'Tester rewards are not configured'});
+    const apiKey=(process.env.PI_API_KEY||'').trim();
+    const walletSeed=(process.env.PI_WALLET_PRIVATE_SEED||'').trim();
+    if(!apiKey||!walletSeed)return res.status(503).json({success:false,error:'Tester rewards are not configured'});
     const claimKey=`${PREFIX}:claim:${user.uid}`;
     const existingRaw=await redis(['GET',claimKey]);
     if(existingRaw){const existing=JSON.parse(existingRaw);if(existing.status==='completed')return res.status(200).json({success:true,alreadyClaimed:true,claim:existing})}
@@ -31,9 +33,17 @@ export default async function handler(req,res){
     const recipients=Number(await redis(['SCARD',`${PREFIX}:recipients`]))||0;
     if(recipients>=LIMIT)return res.status(409).json({success:false,closed:true,error:'All five tester rewards have been claimed.'});
     let claim=existingRaw?JSON.parse(existingRaw):{status:'pending',uid:user.uid,username:user.username,createdAt:new Date().toISOString()};
-    const pi=new PiNetwork(process.env.PI_API_KEY,process.env.PI_WALLET_PRIVATE_SEED);
+    const pi=new PiNetwork(apiKey,walletSeed);
     if(!claim.paymentId){
-      claim.paymentId=await pi.createPayment({amount:AMOUNT,memo:'Sticker.pi Testnet pioneer reward',metadata:{purpose:'mainnet_readiness_a2u',version:1},uid:user.uid});
+      try{
+        claim.paymentId=await pi.createPayment({amount:AMOUNT,memo:'Sticker.pi Testnet pioneer reward',metadata:{purpose:'mainnet_readiness_a2u',version:1},uid:user.uid});
+      }catch(error){
+        const message=String(error?.message||'');
+        if(error?.status===401||/401|unauthori|api.?key/i.test(message)){
+          return res.status(502).json({success:false,error:'Pi Platform rejected the Testnet API key. Recopy the API Key (not OAuth Client ID) from this paired Testnet app.'});
+        }
+        throw error;
+      }
       await redis(['SET',claimKey,JSON.stringify(claim)]);
     }
     let payment=await pi.getPayment(claim.paymentId);
