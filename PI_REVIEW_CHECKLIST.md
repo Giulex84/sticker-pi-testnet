@@ -13,6 +13,8 @@
 - [x] English and Simplified Chinese interface
 - [x] Server-authoritative gameplay state
 - [x] Server-issued run identifiers and plausibility checks
+- [x] Testnet-specific deterministic daily challenge seed
+- [x] Top 10 stores only each Pioneer’s best verified UTC-day result
 - [x] Idempotent run, pack and payment rewards
 - [x] Per-player locks and API rate limits
 - [x] Incomplete-payment recovery implemented
@@ -34,6 +36,7 @@
 - [ ] Open the latest Testnet production deployment in Pi Browser
 - [ ] Confirm footer displays `Sticker.pi Testnet · v1.0.0`
 - [ ] Confirm login, one full run, pack opening, Album and Profile
+- [ ] Confirm Top 10 and personal daily rank update after a verified run
 - [ ] Confirm one 0.01 Test-Pi U2A purchase or purchased state
 - [ ] Confirm Trade displays “Coming soon”
 - [ ] Confirm Privacy and Terms links open

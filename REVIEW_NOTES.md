@@ -11,8 +11,8 @@ Sticker.pi is a short-session skill game and collectible album. Players complete
 ## Recommended review path
 
 1. Open the app in Pi Browser and authenticate with Pi.
-2. Complete one 30-second Sticker Catch run.
-3. Review score, accuracy, combo, XP and daily quest progress.
+2. Complete one 30-second Sticker Catch run generated from the server-issued Testnet daily seed.
+3. Review score, accuracy, combo, XP, daily quest progress, Top 10 and personal rank.
 4. A score of 25 or higher grants at most one gameplay pack per UTC day.
 5. Open a pack and review rarity, NEW/DUPLICATE state and Album progress.
 6. Open Trade and confirm it is marked “Coming soon”; no transfer is available.
@@ -24,7 +24,8 @@ Sticker.pi is a short-session skill game and collectible album. Players complete
 
 - Pi access tokens are verified server-side through `/v2/me`.
 - Important state is authoritative in Upstash Redis; local storage is only a display cache.
-- Runs require a short-lived server-issued identifier and plausibility checks.
+- Runs require a short-lived server-issued identifier, a Testnet-specific daily seed and plausibility checks.
+- Only each Pioneer’s best verified UTC-day result is ranked; score, accuracy and best combo determine order.
 - Player mutations use per-player Redis locks.
 - Run, pack and paid-pack rewards are idempotent.
 - Payment user, direction, Testnet network, amount, memo, metadata, transaction and final status are verified server-side.
@@ -32,6 +33,6 @@ Sticker.pi is a short-session skill game and collectible album. Players complete
 
 ## Intentional limitations
 
-- Peer-to-peer exchange, leaderboards and Mainnet monetization are not active.
+- Peer-to-peer exchange and Mainnet monetization are not active.
 - The controlled A2U tester reward is hidden from ordinary use and depends on Pi Platform authorization.
 - Test-Pi and Testnet progression have no guaranteed Mainnet or monetary value.

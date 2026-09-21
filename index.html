@@ -252,6 +252,13 @@
       .quest:last-child {
         border-bottom: 0;
       }
+      .leaderboard { margin-top: 12px; text-align: left; }
+      .leaderboard .top { margin-bottom: 8px; }
+      .leaderboard ol { margin: 0; padding-left: 25px; color: var(--muted); }
+      .leaderboard li { padding: 7px 0; border-bottom: 1px solid #28305b; }
+      .leaderboard li:last-child { border-bottom: 0; }
+      .leaderboard b { color: var(--text); }
+      .leaderboard small { float: right; color: var(--gold); }
       .pill {
         display: inline-block;
         border: 1px solid var(--line);
@@ -741,6 +748,10 @@
             </button>
             <div id="gameResult" class="status"></div>
           </div>
+          <div class="tile leaderboard">
+            <div class="top"><strong data-i18n="dailyRankings">Today’s Top 10</strong><span id="dailyPosition" class="pill"></span></div>
+            <ol id="dailyLeaders"><li data-i18n="noRankings">No verified runs yet</li></ol>
+          </div>
           <div class="tile" style="margin-top: 12px">
             <strong data-i18n="quests">Today’s quests</strong>
             <div class="quest">
@@ -896,6 +907,7 @@
         roundLocked = false,
         storageOnline = false,
         feverMode = false,
+        runRandom = Math.random,
         lastStateError = "";
       const stickers = [
         ["🌙", "Moon Dream", "common"],
@@ -981,6 +993,9 @@
           ready: "Ready?",
           start: "Start daily run",
           quests: "Today’s quests",
+          dailyRankings: "Today’s Top 10",
+          noRankings: "No verified runs yet",
+          yourRank: "Your rank",
           q1: "Reach 20 points in Sticker Catch",
           q2: "Open a pack",
           q3: "Collect 3 unique stickers",
@@ -1052,6 +1067,9 @@
           ready: "准备好了吗？",
           start: "开始每日挑战",
           quests: "今日任务",
+          dailyRankings: "今日前十名",
+          noRankings: "暂无已验证成绩",
+          yourRank: "你的排名",
           q1: "贴纸捕捉达到 20 分",
           q2: "开启一个卡包",
           q3: "收集 3 张不同贴纸",
@@ -1183,16 +1201,18 @@
             body: JSON.stringify({ action, ...payload }),
           });
           const d = await r.json();
-          if (r.ok && d.player) {
-            storageOnline = !!d.storage;
-            player = {
-              ...player,
-              ...d.player,
-              version: 4,
-              daily: { ...player.daily, ...(d.player.daily || {}) },
-              stats: { ...player.stats, ...(d.player.stats || {}) },
-            };
-            render();
+          if (r.ok) {
+            if (d.player) {
+              storageOnline = !!d.storage;
+              player = {
+                ...player,
+                ...d.player,
+                version: 4,
+                daily: { ...player.daily, ...(d.player.daily || {}) },
+                stats: { ...player.stats, ...(d.player.stats || {}) },
+              };
+              render();
+            }
             return d;
           }
           lastStateError = d.error || `Request failed (${r.status})`;
@@ -1246,9 +1266,22 @@
           player.stats?.packsOpened || 0;
         document.getElementById("uniqueValue").textContent = uniqueCount();
       }
+      function seededRandom(seed) {
+        let value = seed >>> 0;
+        return () => { value += 0x6d2b79f5; let n = value; n = Math.imul(n ^ (n >>> 15), n | 1); n ^= n + Math.imul(n ^ (n >>> 7), n | 61); return ((n ^ (n >>> 14)) >>> 0) / 4294967296; };
+      }
+      async function loadDailyLeaderboard() {
+        const data = await stateApi("daily_leaderboard", {}, false);
+        if (!data) return;
+        const list = document.getElementById("dailyLeaders");
+        list.replaceChildren();
+        if (!data.leaders?.length) { const item=document.createElement("li");item.textContent=dict[lang()].noRankings;list.appendChild(item); }
+        else data.leaders.forEach(entry => { const item=document.createElement("li"),name=document.createElement("b"),score=document.createElement("small");name.textContent=`@${entry.username}`;score.textContent=`${entry.score} pts · ${entry.accuracy}% · x${entry.bestCombo}`;item.append(name,score);list.appendChild(item); });
+        document.getElementById("dailyPosition").textContent=data.position?`${dict[lang()].yourRank} #${data.position}`:"";
+      }
       function shuffle(a) {
         for (let i = a.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
+          const j = Math.floor(runRandom() * (i + 1));
           [a[i], a[j]] = [a[j], a[i]];
         }
         return a;
@@ -1270,13 +1303,13 @@
       function chooseTarget() {
         clearRoundTimer();
         roundLocked = false;
-        currentTarget = Math.floor(Math.random() * stickers.length);
+        currentTarget = Math.floor(runRandom() * stickers.length);
         const sequenceMode =
           feverMode || (gameScore >= 10 && gameCombo >= 3);
         targetSequence = [currentTarget];
         if (sequenceMode) {
           let secondTarget;
-          do secondTarget = Math.floor(Math.random() * stickers.length);
+          do secondTarget = Math.floor(runRandom() * stickers.length);
           while (secondTarget === currentTarget);
           targetSequence.push(secondTarget);
         }
@@ -1295,7 +1328,7 @@
         shuffle(preferred);
         preferred.slice(0, 3).forEach((i) => choices.push(i));
         while (choices.length < 6) {
-          const n = Math.floor(Math.random() * stickers.length);
+          const n = Math.floor(runRandom() * stickers.length);
           if (!choices.includes(n)) choices.push(n);
         }
         shuffle(choices).forEach((i) => {
@@ -1444,6 +1477,7 @@
         gameHits = 0;
         gameMisses = 0;
         currentRunId = started.runId;
+        runRandom = seededRandom(Number(started.challengeSeed) || 1);
         gameSeconds = 30;
         feverMode = false;
         document.getElementById("gameBox").classList.remove("fever");
@@ -1506,6 +1540,7 @@
           document.getElementById("gameResult").textContent = lang() === "zh"
             ? `分数 ${gameScore} • 准确率 ${accuracy}% • 最高连击 x${bestCombo} • +${d.xp} 经验${d.packGranted ? " • +1 每日卡包 🎁" : ""}`
             : `Score ${gameScore} • Accuracy ${accuracy}% • Best combo x${bestCombo} • +${d.xp} XP${reward}`;
+          await loadDailyLeaderboard();
         } else {
           document.getElementById("gameResult").textContent =
             (lang() === "zh" ? "结果无法验证，进度未更改。" : "Result could not be verified. Your saved progress was not changed.") +
@@ -1639,6 +1674,7 @@
           loadLocal();
           render();
           await stateApi("load");
+          await loadDailyLeaderboard();
           if (uniqueCount() === 24 && !(player.badges || []).includes("master_collector_s1")) {
             const completion = await stateApi("claim_album_reward");
             if (completion?.albumCompleted) showAlbumCelebration();

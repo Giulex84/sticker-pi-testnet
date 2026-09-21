@@ -15,7 +15,8 @@ Testnet and Mainnet use separate repositories, Vercel projects, Pi app credentia
 - Pi SDK authentication with `username` and `payments` scopes
 - Verified 0.01 Test-Pi User-to-App Bonus Pack purchase
 - Server-side payment approval, completion, recovery and validation
-- 30-second Sticker Catch challenge
+- Daily 30-second Sticker Catch challenge with a server-issued Testnet-specific deterministic seed
+- Daily Top 10 ranked by verified score, accuracy and best combo, with personal position
 - Server-authoritative XP, levels, daily streaks, quests, packs and inventory
 - 24-sticker album with rarity and duplicate tracking
 - One-time server-verified Master Collector reward
@@ -61,3 +62,4 @@ Controlled A2U test only:
 - Terms: https://sticker-pi-testnet.vercel.app/terms.html
 
 Daily state resets at `00:00 UTC`; it is not a rolling 24-hour timer.
+Daily leaderboard entries are temporary, isolated from Mainnet and contain only each Pioneer’s best verified UTC-day result.
