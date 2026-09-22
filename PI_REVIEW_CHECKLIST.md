@@ -20,7 +20,7 @@
 - [x] Incomplete-payment recovery implemented
 - [x] Trade marked “Coming soon”
 - [x] Controlled A2U card hidden from the normal review path
-- [x] Version aligned to `v1.0.0`
+- [x] Version aligned to `v1.0.1`
 
 ## Environment separation
 
@@ -34,7 +34,7 @@
 ## Final manual checks
 
 - [ ] Open the latest Testnet production deployment in Pi Browser
-- [ ] Confirm footer displays `Sticker.pi Testnet · v1.0.0`
+- [ ] Confirm footer displays `Sticker.pi Testnet · v1.0.1`
 - [ ] Confirm login, one full run, pack opening, Album and Profile
 - [ ] Confirm Top 10 and personal daily rank update after a verified run
 - [ ] Confirm one 0.01 Test-Pi U2A purchase or purchased state

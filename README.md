@@ -4,7 +4,7 @@ Sticker.pi Testnet is the isolated testing build of the Pi Network collectible s
 
 ## Test release
 
-Current release: **v1.0.0**
+Current release: **v1.0.1**
 
 Testnet URL: https://sticker-pi-testnet.vercel.app
 
