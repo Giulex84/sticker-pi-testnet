@@ -35,6 +35,15 @@ async function recordVerified(payment,uid){
   await redis(['EVAL',"redis.call('SADD',KEYS[1],ARGV[1]); redis.call('SADD',KEYS[2],ARGV[2]); redis.call('SADD',KEYS[3],ARGV[3]); return 1",3,walletKey,paymentsKey,`${PREFIX}:recipients`,hash,payment.identifier,uid]);
   return hash;
 }
+async function incompletePayments(apiKey){
+  const r=await fetch('https://api.minepi.com/v2/payments/incomplete_server_payments',{headers:{Authorization:`Key ${apiKey}`},signal:AbortSignal.timeout(15000)});
+  if(!r.ok)throw Object.assign(new Error('Pi payment recovery is temporarily unavailable. No new payment was created.'),{status:409});
+  const data=await r.json();
+  if(!Array.isArray(data.incomplete_server_payments))throw Object.assign(new Error('Pi recovery response is incomplete.'),{status:409});
+  return data.incomplete_server_payments;
+}
+function pending(message){return Object.assign(new Error(message),{status:409,pending:true});}
+function matchesTest(p){return p?.direction==='app_to_user'&&p.network==='Pi Testnet'&&Number(p.amount)===AMOUNT&&p.memo==='Sticker.pi Testnet pioneer reward'&&p.metadata?.purpose==='mainnet_readiness_a2u';}
 async function metrics(){
   const [wallets,payments]=await Promise.all([redis(['SCARD',walletKey]),redis(['SCARD',paymentsKey])]);
   const completed=Number(wallets)||0;
@@ -44,6 +53,7 @@ async function renew(token){
   const ok=await redis(['EVAL',"if redis.call('GET',KEYS[1]) == ARGV[1] then return redis.call('PEXPIRE',KEYS[1],ARGV[2]) else return 0 end",1,`${PREFIX}:lock`,token,120000]);
   if(!ok)throw Object.assign(new Error('Test payment lock expired. Retry to recover your payment.'),{status:409});
 }
+async function releaseActive(uid){await redis(['EVAL',"if redis.call('GET',KEYS[1]) == ARGV[1] then return redis.call('DEL',KEYS[1]) else return 0 end",1,`${PREFIX}:active`,uid]);}
 async function unlock(token){await redis(['EVAL',"if redis.call('GET',KEYS[1]) == ARGV[1] then return redis.call('DEL',KEYS[1]) else return 0 end",1,`${PREFIX}:lock`,token]).catch(()=>{});}
 async function reconcileLegacy(pi,token){
   const ids=await redis(['SMEMBERS',`${PREFIX}:recipients`])||[];
@@ -77,39 +87,94 @@ export default async function handler(req,res){
     const admin=user.username.toLowerCase()===(process.env.STICKER_ADMIN_USERNAME||'Giulex84').toLowerCase();
     if(action==='status'){
       const m=await metrics();
-      return res.status(200).json({success:true,...m,alreadyClaimed:claim.status==='completed',admin});
+      return res.status(200).json({success:true,...m,alreadyClaimed:claim.status==='completed',pending:Boolean(claim.paymentId&&!['completed','blocked'].includes(claim.status))||['creating','submitting'].includes(claim.status),admin});
     }
-    if(claim.status==='completed')return res.status(200).json({success:true,alreadyClaimed:true,...await metrics()});
+    if(claim.status==='completed'){await releaseActive(user.uid);return res.status(200).json({success:true,alreadyClaimed:true,...await metrics()});}
+    const activeUid=await redis(['GET',`${PREFIX}:active`]);
+    if(activeUid&&activeUid!==user.uid)throw pending('Another tester has an unresolved payment. They must recover it before a new test can start.');
     const before=await metrics();
     // Recover existing payments even if the five-wallet threshold has since been reached.
     if(before.thresholdReached&&!claim.paymentId)return res.status(409).json({success:false,closed:true,...before,error:'The five-wallet Test-Pi test is complete.'});
     if(!claim.paymentId){
+      // Pi is the source of truth if creation succeeded but the response or Redis write was lost.
       await renew(lockToken);
-      claim.paymentId=await pi.createPayment({amount:AMOUNT,memo:'Sticker.pi Testnet pioneer reward',metadata:{purpose:'mainnet_readiness_a2u',version:1},uid:user.uid});
-      await redis(['SET',claimKey,JSON.stringify(claim)]);
+      const ongoing=await incompletePayments(apiKey);
+      const own=ongoing.filter(p=>matchesTest(p)&&p.user_uid===user.uid);
+      if(own.length>1)throw pending('Multiple pending test payments need administrator review. No new payment was created.');
+      if(own.length===1){
+        claim={...claim,paymentId:own[0].identifier,status:'pending'};
+        await redis(['SET',claimKey,JSON.stringify(claim)]);
+      }else{
+        if(claim.status==='creating')throw pending('The previous creation has an uncertain outcome. Retry recovery later; a second payment will not be created.');
+        if(ongoing.length)throw pending('An app payment is still ongoing. Its recipient must recover it before a new test can start.');
+        // Persist intent before the external side effect; never blindly repeat an uncertain creation.
+        await redis(['SET',`${PREFIX}:active`,user.uid]);
+        claim={...claim,status:'creating',createdAt:claim.createdAt||new Date().toISOString()};
+        await redis(['SET',claimKey,JSON.stringify(claim)]);
+        await renew(lockToken);
+        try{
+          claim.paymentId=await pi.createPayment({amount:AMOUNT,memo:'Sticker.pi Testnet pioneer reward',metadata:{purpose:'mainnet_readiness_a2u',version:1},uid:user.uid});
+          claim.status='pending';
+          await redis(['SET',claimKey,JSON.stringify(claim)]);
+        }catch(error){
+          const recovered=(await incompletePayments(apiKey)).filter(p=>matchesTest(p)&&p.user_uid===user.uid);
+          if(recovered.length!==1)throw pending('Pi creation is pending or unavailable. Retry recovery; no duplicate will be created.');
+          claim={...claim,paymentId:recovered[0].identifier,status:'pending'};
+          await redis(['SET',claimKey,JSON.stringify(claim)]);
+        }
+      }
     }
+    await redis(['SET',`${PREFIX}:active`,user.uid]);
     await renew(lockToken);
     let payment=await pi.getPayment(claim.paymentId);
+    if((payment.status?.cancelled||payment.status?.user_cancelled)&&!payment.transaction?.txid&&!claim.txid&&claim.status!=='submitting'&&payment.user_uid===user.uid&&matchesTest(payment)){
+      claim.status='blocked';await redis(['SET',claimKey,JSON.stringify(claim)]);await releaseActive(user.uid);
+      throw pending('This test payment was cancelled. Administrator review is needed before another attempt.');
+    }
     validatePayment(payment,user.uid);
+    if(!matchesTest(payment))throw pending('Pending payment does not belong to this test. Administrator review required.');
     const hash=walletHash(payment);
     if(!payment.transaction?.txid&&!claim.txid){
-      if(await redis(['SISMEMBER',walletKey,hash])){
+      if(claim.status!=='submitting'&&await redis(['SISMEMBER',walletKey,hash])){
+        await renew(lockToken);
+        await pi.cancelPayment(claim.paymentId);
+        claim.status='blocked';
+        await redis(['SET',claimKey,JSON.stringify(claim)]);
+        await releaseActive(user.uid);
         return res.status(409).json({success:false,error:'This Testnet wallet has already received a test payment.'});
       }
-      if((await metrics()).thresholdReached)return res.status(409).json({success:false,closed:true,error:'The five-wallet Test-Pi test is complete.'});
+      if(claim.status!=='submitting'&&(await metrics()).thresholdReached){
+        await renew(lockToken);
+        await pi.cancelPayment(claim.paymentId);
+        claim.status='blocked';
+        await redis(['SET',claimKey,JSON.stringify(claim)]);
+        return res.status(409).json({success:false,closed:true,error:'The five-wallet Test-Pi test is complete.'});
+      }
+      if(claim.status==='submitting')throw pending('Blockchain submission has an uncertain outcome. Retry recovery later; no second transfer will be sent.');
       await renew(lockToken);
-      claim.txid=await pi.submitPayment(claim.paymentId);
+      claim.status='submitting';
+      await redis(['SET',claimKey,JSON.stringify(claim)]);
+      try{claim.txid=await pi.submitPayment(claim.paymentId);}
+      catch(error){
+        const observed=await pi.getPayment(claim.paymentId);
+        validatePayment(observed,user.uid);
+        if(!observed.transaction?.txid)throw pending('Pi has not confirmed the transaction yet. Retry recovery; no second transfer will be sent.');
+        claim.txid=observed.transaction.txid;
+      }
+      claim.status='submitted';
       await redis(['SET',claimKey,JSON.stringify(claim)]);
     }else claim.txid=payment.transaction?.txid||claim.txid;
     if(!payment.status?.developer_completed){
       await renew(lockToken);
-      await pi.completePayment(claim.paymentId,claim.txid);
+      try{await pi.completePayment(claim.paymentId,claim.txid);}
+      catch(error){const observed=await pi.getPayment(claim.paymentId);validatePayment(observed,user.uid);if(!completedPayment(observed))throw pending('Transaction sent; Pi completion is pending. Retry recovery without sending again.');}
     }
     payment=await pi.getPayment(claim.paymentId);
     await renew(lockToken);
     const confirmedHash=await recordVerified(payment,user.uid);
     claim={...claim,status:'completed',walletHash:confirmedHash,txid:payment.transaction.txid,completedAt:new Date().toISOString()};
     await redis(['SET',claimKey,JSON.stringify(claim)]);
+    await releaseActive(user.uid);
     return res.status(200).json({success:true,alreadyClaimed:false,...await metrics()});
-  }catch(error){return apiError(res,error);}finally{if(lockToken)await unlock(lockToken);}
+  }catch(error){if(error.pending)return res.status(409).json({success:false,pending:true,error:error.message});return apiError(res,error);}finally{if(lockToken)await unlock(lockToken);}
 }

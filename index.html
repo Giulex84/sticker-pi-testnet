@@ -1706,7 +1706,8 @@
           ? `已验证 A2U：${d.verifiedPayments} 笔 · 不同钱包：${d.completed}/${d.limit}${d.thresholdReached ? " · 已达到门槛 ✓" : ""}`
           : `Verified A2U payments: ${d.verifiedPayments} · Distinct wallets: ${d.completed}/${d.limit}${d.thresholdReached ? " · Threshold reached ✓" : ""}`;
         const button = document.getElementById("a2uClaimBtn");
-        button.disabled = Boolean(d.alreadyClaimed || d.thresholdReached);
+        button.disabled = Boolean(d.alreadyClaimed || (d.thresholdReached && !d.pending));
+        if (d.pending) { button.textContent = lang() === "zh" ? "恢复待处理付款" : "Recover pending Test-Pi"; document.getElementById("a2uStatus").textContent = lang() === "zh" ? "付款正在处理中，请恢复现有付款。" : "Payment pending. Recover the existing payment without starting a new one."; }
         if (d.alreadyClaimed) button.textContent = lang() === "zh" ? "已完成 ✓" : "Completed ✓";
         else if (d.thresholdReached) button.textContent = lang() === "zh" ? "测试已结束" : "Technical test complete";
       }

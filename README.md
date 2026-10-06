@@ -63,3 +63,7 @@ Controlled A2U test only:
 
 Daily state resets at `00:00 UTC`; it is not a rolling 24-hour timer.
 Daily leaderboard entries are temporary, isolated from Mainnet and contain only each Pioneer’s best verified UTC-day result.
+
+## Pending A2U recovery
+
+Claim creation and blockchain submission intents are persisted before external side effects. A durable app-wide active claim prevents another tester from starting while an outcome is unresolved. Lost creation responses and ongoing payments are reconciled against Pi incomplete server payments, matching the verified UID and exact Testnet reward product. Submitted transactions are completed using their existing txid. Uncertain submissions are never blindly resubmitted; if Pi cannot supply a txid, recovery remains pending and may require administrator investigation. Only definitely unsubmitted duplicate-wallet or over-limit claims are cancelled. Completed wallet/payment metrics remain idempotent. The UI offers Recover pending Test-Pi. No guarantee can remove Pi or blockchain outages.
