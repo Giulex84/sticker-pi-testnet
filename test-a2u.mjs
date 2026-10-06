@@ -54,6 +54,6 @@ user={uid:'u2',username:'Other'};hideTx=true;const oldSubmits=submits;r=await ca
 user={uid:'u3',username:'Other'};loseComplete=true;r=await call('claim');assert.equal(r.code,200);
 // A live lock rejects concurrent work before any external side effect.
 data.set(prefix+':lock','other-worker');user={uid:'u4',username:'Other'};const previousCreates=creates;r=await call('claim');assert.equal(r.code,409);assert.equal(creates,previousCreates);data.delete(prefix+':lock');
-// Unknown creation outcome stays recoverable without another creation.
-data.set(prefix+':claim:u4',JSON.stringify({status:'creating',uid:'u4'}));r=await call('claim');assert.equal(r.body.pending,true);assert.equal(creates,previousCreates);
+// Creating-only state can safely retry after Pi confirms no ongoing payment.
+data.set(prefix+':claim:u4',JSON.stringify({status:'creating',uid:'u4'}));r=await call('claim');assert.equal(r.code,200);assert.equal(creates,previousCreates+1);
 console.log('PASS: lost creation response, ongoing recovery, uncertain submission, completion timeout, concurrency, unknown outcome');

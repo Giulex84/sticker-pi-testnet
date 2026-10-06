@@ -1729,9 +1729,9 @@
           b.textContent = lang() === "zh" ? "已完成 ✓" : "Completed ✓";
           await loadA2UStatus();
         } catch (e) {
-          status.textContent = e.message;
           b.disabled = Boolean(e.closed);
           await loadA2UStatus();
+          status.textContent = e.message;
         }
       }
       async function buyPack() {

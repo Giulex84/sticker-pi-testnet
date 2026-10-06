@@ -105,7 +105,9 @@ export default async function handler(req,res){
         claim={...claim,paymentId:own[0].identifier,status:'pending'};
         await redis(['SET',claimKey,JSON.stringify(claim)]);
       }else{
-        if(claim.status==='creating')throw pending('The previous creation has an uncertain outcome. Retry recovery later; a second payment will not be created.');
+        // No submission can start while the durable claim is still in creating.
+        // A successful Pi incomplete-payments lookup plus Pi's ongoing-payment guard
+        // allows retrying creation; submitting states never follow this path.
         if(ongoing.length)throw pending('An app payment is still ongoing. Its recipient must recover it before a new test can start.');
         // Persist intent before the external side effect; never blindly repeat an uncertain creation.
         await redis(['SET',`${PREFIX}:active`,user.uid]);
@@ -117,8 +119,27 @@ export default async function handler(req,res){
           claim.status='pending';
           await redis(['SET',claimKey,JSON.stringify(claim)]);
         }catch(error){
+          const allowedCodes=['altered_amount','invalid_address','missing_scope','missing_wallet','ongoing_payment_found','feature_not_available','too_many_cancelled_payments','too_many_payments','user_not_found','invalid_amount','invalid_arguments','invalid_metadata','payment_not_found'];
+          const code=allowedCodes.includes(error?.code)?error.code:'unknown_error';
+          console.warn(JSON.stringify({event:'sticker_a2u_create_failed',stage:'create',code}));
+          claim.lastCreateError=code;
+          await redis(['SET',claimKey,JSON.stringify(claim)]);
           const recovered=(await incompletePayments(apiKey)).filter(p=>matchesTest(p)&&p.user_uid===user.uid);
-          if(recovered.length!==1)throw pending('Pi creation is pending or unavailable. Retry recovery; no duplicate will be created.');
+          if(recovered.length!==1){
+            const messages={
+              missing_wallet:'Pi reports no recipient wallet. Activate your Testnet wallet in Pi Wallet.',
+              missing_scope:'Pi reports missing payment permission. Sign in again and accept the payments scope.',
+              feature_not_available:'Pi has not enabled A2U for this Testnet app. Check its Developer Portal authorization.',
+              invalid_address:'Pi rejected the recipient wallet address.',
+              user_not_found:'Pi did not recognize this user for the paired Testnet app.',
+              too_many_payments:'Pi payment limit reached. Retry later.',
+              too_many_cancelled_payments:'Pi cancelled-payment limit reached. Administrator review required.'
+            };
+            if(code!=='unknown_error'&&code!=='ongoing_payment_found'){
+              claim.status='create_rejected';await redis(['SET',claimKey,JSON.stringify(claim)]);await releaseActive(user.uid);
+            }
+            throw pending((messages[code]||'Pi creation could not finish. Retry recovery; no transfer has been submitted.')+' [Pi: '+code+']');
+          }
           claim={...claim,paymentId:recovered[0].identifier,status:'pending'};
           await redis(['SET',claimKey,JSON.stringify(claim)]);
         }
