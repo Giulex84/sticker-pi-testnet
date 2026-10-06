@@ -152,7 +152,7 @@ export default async function handler(req,res){
               pi_http_error:'Pi returned an HTTP error during creation. Administrator diagnosis required.',
               pi_invalid_response:'Pi returned an incomplete response. Retry recovery later.',
               missing_wallet:'Pi reports no recipient wallet. Activate your Testnet wallet in Pi Wallet.',
-              missing_scope:'Pi reports missing payment permission. Sign in again and accept the payments scope.',
+              missing_scope:'Pi requires wallet-address permission for A2U. Reload, sign in again and authorize your public wallet address.',
               feature_not_available:'Pi has not enabled A2U for this Testnet app. Check its Developer Portal authorization.',
               invalid_address:'Pi rejected the recipient wallet address.',
               user_not_found:'Pi did not recognize this user for the paired Testnet app.',

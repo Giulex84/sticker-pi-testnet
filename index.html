@@ -1655,7 +1655,7 @@
         try {
           b.disabled = true;
           authData = await Pi.authenticate(
-            ["username", "payments"],
+            ["username", "payments", "wallet_address"],
             (payment) => {
               pendingPayment = payment;
             },
