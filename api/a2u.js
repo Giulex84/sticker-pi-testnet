@@ -42,6 +42,23 @@ async function incompletePayments(apiKey){
   if(!Array.isArray(data.incomplete_server_payments))throw Object.assign(new Error('Pi recovery response is incomplete.'),{status:409});
   return data.incomplete_server_payments;
 }
+async function createTestPayment(apiKey,uid){
+  let r;
+  try{
+    r=await fetch('https://api.minepi.com/v2/payments',{method:'POST',headers:{Authorization:`Key ${apiKey}`,'Content-Type':'application/json'},body:JSON.stringify({payment:{amount:AMOUNT,memo:'Sticker.pi Testnet pioneer reward',metadata:{purpose:'mainnet_readiness_a2u',version:1},uid}}),signal:AbortSignal.timeout(20000)});
+  }catch(error){
+    throw Object.assign(new Error('Pi create request did not return a response'),{code:error?.name==='TimeoutError'?'pi_timeout':'pi_network_error'});
+  }
+  let data;
+  try{data=await r.json();}catch{throw Object.assign(new Error('Pi returned a non-JSON create response'),{code:'pi_invalid_response',httpStatus:r.status});}
+  if(!r.ok){
+    const raw=typeof data?.error==='string'?data.error:'';
+    const code=/^[a-z][a-z0-9_]{0,63}$/.test(raw)?raw:(r.status===401?'unauthorized':r.status===403?'forbidden':r.status===429?'pi_rate_limited':'pi_http_error');
+    throw Object.assign(new Error('Pi rejected payment creation'),{code,httpStatus:r.status});
+  }
+  if(!data?.identifier)throw Object.assign(new Error('Pi create response lacks identifier'),{code:'pi_invalid_response',httpStatus:r.status});
+  return data.identifier;
+}
 function pending(message){return Object.assign(new Error(message),{status:409,pending:true});}
 function matchesTest(p){return p?.direction==='app_to_user'&&p.network==='Pi Testnet'&&Number(p.amount)===AMOUNT&&p.memo==='Sticker.pi Testnet pioneer reward'&&p.metadata?.purpose==='mainnet_readiness_a2u';}
 async function metrics(){
@@ -115,18 +132,25 @@ export default async function handler(req,res){
         await redis(['SET',claimKey,JSON.stringify(claim)]);
         await renew(lockToken);
         try{
-          claim.paymentId=await pi.createPayment({amount:AMOUNT,memo:'Sticker.pi Testnet pioneer reward',metadata:{purpose:'mainnet_readiness_a2u',version:1},uid:user.uid});
+          claim.paymentId=await createTestPayment(apiKey,user.uid);
           claim.status='pending';
           await redis(['SET',claimKey,JSON.stringify(claim)]);
         }catch(error){
-          const allowedCodes=['altered_amount','invalid_address','missing_scope','missing_wallet','ongoing_payment_found','feature_not_available','too_many_cancelled_payments','too_many_payments','user_not_found','invalid_amount','invalid_arguments','invalid_metadata','payment_not_found'];
+          const allowedCodes=['altered_amount','invalid_address','missing_scope','missing_wallet','ongoing_payment_found','feature_not_available','too_many_cancelled_payments','too_many_payments','user_not_found','invalid_amount','invalid_arguments','invalid_metadata','payment_not_found','unauthorized','forbidden','pi_timeout','pi_network_error','pi_invalid_response','pi_rate_limited','pi_http_error'];
           const code=allowedCodes.includes(error?.code)?error.code:'unknown_error';
-          console.warn(JSON.stringify({event:'sticker_a2u_create_failed',stage:'create',code}));
+          console.warn(JSON.stringify({event:'sticker_a2u_create_failed',stage:'create',code,httpStatus:error?.httpStatus||null}));
           claim.lastCreateError=code;
           await redis(['SET',claimKey,JSON.stringify(claim)]);
           const recovered=(await incompletePayments(apiKey)).filter(p=>matchesTest(p)&&p.user_uid===user.uid);
           if(recovered.length!==1){
             const messages={
+              unauthorized:'Pi rejected the Testnet API key. Verify the API key of the paired Testnet app in Vercel.',
+              forbidden:'Pi denied A2U creation for this Testnet app. Check its authorization in Developer Portal.',
+              pi_timeout:'Pi did not respond in time. Retry recovery later.',
+              pi_network_error:'The server could not reach Pi for creation. Retry recovery later.',
+              pi_rate_limited:'Pi is limiting requests. Wait before retrying.',
+              pi_http_error:'Pi returned an HTTP error during creation. Administrator diagnosis required.',
+              pi_invalid_response:'Pi returned an incomplete response. Retry recovery later.',
               missing_wallet:'Pi reports no recipient wallet. Activate your Testnet wallet in Pi Wallet.',
               missing_scope:'Pi reports missing payment permission. Sign in again and accept the payments scope.',
               feature_not_available:'Pi has not enabled A2U for this Testnet app. Check its Developer Portal authorization.',
@@ -135,7 +159,7 @@ export default async function handler(req,res){
               too_many_payments:'Pi payment limit reached. Retry later.',
               too_many_cancelled_payments:'Pi cancelled-payment limit reached. Administrator review required.'
             };
-            if(code!=='unknown_error'&&code!=='ongoing_payment_found'){
+            if(!['unknown_error','ongoing_payment_found','pi_timeout','pi_network_error','pi_invalid_response','pi_http_error'].includes(code)){
               claim.status='create_rejected';await redis(['SET',claimKey,JSON.stringify(claim)]);await releaseActive(user.uid);
             }
             throw pending((messages[code]||'Pi creation could not finish. Retry recovery; no transfer has been submitted.')+' [Pi: '+code+']');

@@ -3,10 +3,16 @@ import {readFile} from 'node:fs/promises';
 import {createHash,randomUUID} from 'node:crypto';
 const source=(await readFile(new URL('./api/a2u.js',import.meta.url),'utf8')).replace(/^import .*;\n/gm,'').replace('export default async function handler','async function handler');
 const make=new Function('PiBackend','createHash','randomUUID','verifyPiUser','apiError','fetch','process',source+';return handler;');
-const data=new Map(),payments=new Map();let creates=0,submits=0,user={uid:'u1',username:'Giulex84'},verify=true,loseCreate=false,hideTx=false,loseComplete=false;
+const data=new Map(),payments=new Map();let creates=0,submits=0,user={uid:'u1',username:'Giulex84'},verify=true,loseCreate=false,hideTx=false,loseComplete=false,createHttp=0;
 const prefix='sticker:a2u:testnet';
 function set(k){if(!data.has(k))data.set(k,new Set());return data.get(k);}
 async function fetch(_url,opts){
+ if(_url==='https://api.minepi.com/v2/payments'){
+  if(createHttp)return {ok:false,status:createHttp,json:async()=>({})};
+  try{const id=await new Pi().createPayment(JSON.parse(opts.body).payment);return {ok:true,status:200,json:async()=>payments.get(id)};}
+  catch(e){return {ok:false,status:409,json:async()=>({error:e.code||'ongoing_payment_found'})};}
+ }
+
  if(_url.includes("incomplete_server_payments"))return {ok:true,json:async()=>({incomplete_server_payments:[...payments.values()].filter(p=>!p.status?.developer_completed&&!p.status?.cancelled)})};
  const [op,...a]=JSON.parse(opts.body);let result;
  if(op==='GET')result=data.get(a[0])??null;
@@ -57,3 +63,6 @@ data.set(prefix+':lock','other-worker');user={uid:'u4',username:'Other'};const p
 // Creating-only state can safely retry after Pi confirms no ongoing payment.
 data.set(prefix+':claim:u4',JSON.stringify({status:'creating',uid:'u4'}));r=await call('claim');assert.equal(r.code,200);assert.equal(creates,previousCreates+1);
 console.log('PASS: lost creation response, ongoing recovery, uncertain submission, completion timeout, concurrency, unknown outcome');
+
+user={uid:'u5',username:'Other'};createHttp=401;const beforeRejection=submits;r=await call('claim');assert.equal(r.body.pending,true);assert.match(r.body.error,/unauthorized/);assert.equal(submits,beforeRejection);assert.equal(data.has(prefix+':active'),false);createHttp=0;r=await call('claim');assert.equal(r.code,200);
+console.log('PASS: HTTP 401 diagnosis, safe rejection state and subsequent retry');
