@@ -1709,7 +1709,8 @@
         button.disabled = Boolean(d.alreadyClaimed || (d.thresholdReached && !d.pending));
         if (d.pending) { button.textContent = lang() === "zh" ? "恢复待处理付款" : "Recover pending Test-Pi"; document.getElementById("a2uStatus").textContent = lang() === "zh" ? "付款正在处理中，请恢复现有付款。" : "Payment pending. Recover the existing payment without starting a new one."; }
         if (d.alreadyClaimed) button.textContent = lang() === "zh" ? "已完成 ✓" : "Completed ✓";
-        else if (d.thresholdReached) button.textContent = lang() === "zh" ? "测试已结束" : "Technical test complete";
+        else if (d.thresholdReached && !d.pending) button.textContent = lang() === "zh" ? "测试已结束" : "Technical test complete";
+        else if (!d.pending) button.textContent = lang() === "zh" ? "领取 0.01 Test-Pi" : "Claim 0.01 Test-Pi";
       }
       async function loadA2UStatus() {
         try { renderA2UMetrics(await a2uApi("status")); }
@@ -1726,8 +1727,8 @@
           status.textContent = d.alreadyClaimed
             ? (lang() === "zh" ? "已领取 Test-Pi ✓" : "Test-Pi already received ✓")
             : (lang() === "zh" ? "Test-Pi 已发送 ✓" : "Test-Pi sent ✓");
+          renderA2UMetrics({ ...d, alreadyClaimed: true, pending: false });
           b.textContent = lang() === "zh" ? "已完成 ✓" : "Completed ✓";
-          await loadA2UStatus();
         } catch (e) {
           b.disabled = Boolean(e.closed);
           await loadA2UStatus();
