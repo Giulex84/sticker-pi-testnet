@@ -776,12 +776,13 @@
             <div class="pack">🎁</div>
             <strong data-i18n="testerReward">Testnet tester reward</strong>
             <p class="muted" data-i18n="testerRewardSub">
-              Claim a one-time 0.01 Test-Pi reward. Limited to five unique Testnet users.
+              Receive 0.01 Test-Pi for a technical test. Five distinct recipient wallets. No Mainnet Pi.
             </p>
             <button id="a2uClaimBtn" class="primary wide" data-i18n="claimReward">
               Claim 0.01 Test-Pi
             </button>
             <div id="a2uStatus" class="status"></div>
+            <div id="a2uAdminMetrics" class="status hidden"></div>
           </div>
         </section>
         <section id="album" class="section hidden">
@@ -1000,7 +1001,7 @@
           q2: "Open a pack",
           q3: "Collect 3 unique stickers",
           testerReward: "Testnet tester reward",
-          testerRewardSub: "Claim a one-time 0.01 Test-Pi reward. Limited to five unique Testnet users.",
+          testerRewardSub: "Receive 0.01 Test-Pi for a technical test. Five distinct recipient wallets. No Mainnet Pi.",
           claimReward: "Claim 0.01 Test-Pi",
           openPack: "Open a sticker pack",
           openPackSub:
@@ -1074,7 +1075,7 @@
           q2: "开启一个卡包",
           q3: "收集 3 张不同贴纸",
           testerReward: "测试网测试奖励",
-          testerRewardSub: "领取一次性 0.01 Test-Pi 奖励，仅限五位不同的测试网用户。",
+          testerRewardSub: "技术测试可领取 0.01 Test-Pi，仅限五个不同的接收钱包，不涉及主网 Pi。",
           claimReward: "领取 0.01 Test-Pi",
           openPack: "开启贴纸卡包",
           openPackSub: "每包包含 3 张贴纸。重复贴纸会被安全记录，供未来交换功能使用。",
@@ -1680,40 +1681,56 @@
             if (completion?.albumCompleted) showAlbumCelebration();
           }
           await recoverIncomplete();
-          if (new URLSearchParams(location.search).get("claim") === "a2u") {
-            const reward = document.getElementById("a2uReward");
-            reward?.classList.remove("hidden");
-            setTimeout(() => reward?.scrollIntoView({ behavior: "smooth", block: "center" }), 150);
-          }
+          document.getElementById("a2uReward").classList.remove("hidden");
+          await loadA2UStatus();
+
         } catch (e) {
           alert(e.message);
           b.disabled = false;
         }
+      }
+      async function a2uApi(action) {
+        const r = await fetch("/api/a2u", {
+          method: "POST",
+          headers: { Authorization: "Bearer " + authData.accessToken, "Content-Type": "application/json" },
+          body: JSON.stringify({ action }),
+        });
+        const d = await r.json();
+        if (!r.ok) { const error = new Error(d.error || "Test payment unavailable"); error.closed = d.closed; throw error; }
+        return d;
+      }
+      function renderA2UMetrics(d) {
+        const metric = document.getElementById("a2uAdminMetrics");
+        if (d.admin) metric.classList.remove("hidden");
+        metric.textContent = lang() === "zh"
+          ? `已验证 A2U：${d.verifiedPayments} 笔 · 不同钱包：${d.completed}/${d.limit}${d.thresholdReached ? " · 已达到门槛 ✓" : ""}`
+          : `Verified A2U payments: ${d.verifiedPayments} · Distinct wallets: ${d.completed}/${d.limit}${d.thresholdReached ? " · Threshold reached ✓" : ""}`;
+        const button = document.getElementById("a2uClaimBtn");
+        button.disabled = Boolean(d.alreadyClaimed || d.thresholdReached);
+        if (d.alreadyClaimed) button.textContent = lang() === "zh" ? "已完成 ✓" : "Completed ✓";
+        else if (d.thresholdReached) button.textContent = lang() === "zh" ? "测试已结束" : "Technical test complete";
+      }
+      async function loadA2UStatus() {
+        try { renderA2UMetrics(await a2uApi("status")); }
+        catch (e) { document.getElementById("a2uStatus").textContent = e.message; }
       }
       async function claimA2U() {
         if (!authData?.accessToken) return;
         const b = document.getElementById("a2uClaimBtn");
         const status = document.getElementById("a2uStatus");
         b.disabled = true;
-        status.textContent = lang() === "zh" ? "正在准备 Test-Pi 奖励…" : "Preparing the Test-Pi reward…";
+        status.textContent = lang() === "zh" ? "正在准备 Test-Pi…" : "Preparing the Test-Pi technical test…";
         try {
-          const r = await fetch("/api/a2u", {
-            method: "POST",
-            headers: {
-              Authorization: "Bearer " + authData.accessToken,
-              "Content-Type": "application/json",
-            },
-            body: "{}",
-          });
-          const d = await r.json();
-          if (!r.ok) throw new Error(d.error || "Reward failed");
+          const d = await a2uApi("claim");
           status.textContent = d.alreadyClaimed
-            ? (lang() === "zh" ? "奖励已领取 ✓" : "Reward already claimed ✓")
-            : (lang() === "zh" ? `奖励已发送 ✓ 已完成 ${d.completed}/5` : `Reward sent ✓ ${d.completed}/5 completed`);
+            ? (lang() === "zh" ? "已领取 Test-Pi ✓" : "Test-Pi already received ✓")
+            : (lang() === "zh" ? "Test-Pi 已发送 ✓" : "Test-Pi sent ✓");
           b.textContent = lang() === "zh" ? "已完成 ✓" : "Completed ✓";
+          await loadA2UStatus();
         } catch (e) {
           status.textContent = e.message;
-          b.disabled = false;
+          b.disabled = Boolean(e.closed);
+          await loadA2UStatus();
         }
       }
       async function buyPack() {

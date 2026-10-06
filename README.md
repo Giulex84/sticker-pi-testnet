@@ -31,7 +31,7 @@ Peer-to-peer duplicate exchange is **not active**. The Trade screen is informati
 
 ## Controlled A2U test
 
-The five-user Test-Pi A2U reward is a controlled developer test, not part of the normal product path. Its card is hidden during ordinary use and is shown only through the explicit `?claim=a2u` test link. Execution requires the paired Testnet app API key, a dedicated Testnet app-wallet seed and Pi Platform A2U authorization.
+The five-user Test-Pi A2U reward is a controlled developer test, not part of the normal product path. Its card is visible after authentication on the normal Testnet app URL. The owner sees verified A2U payment count, distinct recipient wallet count and the five-wallet threshold status. The status action never creates or submits a payment. Recipient wallets are counted from Pi-verified payment `to_address` values using server-side SHA-256 hashes; legacy completed claims are reconciled through Pi before inclusion. Execution requires the paired Testnet app API key, a dedicated Testnet app-wallet seed and Pi Platform A2U authorization.
 
 Never use a personal wallet passphrase or Mainnet wallet seed.
 
