@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="robots" content="noindex,nofollow,noarchive"><title>Sticker.pi Metrics</title>
+  <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+  <style>
+    :root{color-scheme:dark;--bg:#090b18;--panel:#151934;--panel2:#0d1126;--line:#343b70;--muted:#a9afd1;--mint:#4de1cf;--gold:#ffca54}*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at 50% 0,#263878 0,#101735 34%,var(--bg) 72%);color:#f7f8ff;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif}.wrap{width:min(1050px,100%);margin:auto;padding:calc(26px + env(safe-area-inset-top)) 20px calc(40px + env(safe-area-inset-bottom))}.hero{display:flex;align-items:center;gap:18px;margin:12px 0 28px}.icon{display:grid;place-items:center;width:86px;height:86px;border-radius:25px;background:linear-gradient(135deg,#7567ff,#42dacb);font-size:42px}.hero h1{margin:0;font-size:clamp(28px,6vw,48px)}.hero p{margin:7px 0 0;color:var(--muted);font-size:18px}.badge{margin-left:auto;border:1px solid #25a7b9;border-radius:999px;color:var(--mint);padding:12px 20px;font-weight:700}.panel{border:1px solid var(--line);border-radius:34px;background:#11162ee8;padding:28px}.toolbar{display:flex;justify-content:space-between;gap:14px;margin-bottom:24px}select,button{border:1px solid var(--line);border-radius:20px;background:#171c38;color:#fff;padding:15px 20px;font:inherit;font-size:18px}button{cursor:pointer}.status{min-height:24px;color:var(--muted);margin:0 0 18px}.status.error{color:#ff9da9}.note{color:var(--muted);font-size:14px;line-height:1.6}.metric small{display:block;font-size:12px;line-height:1.4;margin-top:8px}.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.metric{min-height:125px;border:1px solid #2c335c;border-radius:26px;background:#191f3d;padding:20px;color:var(--muted)}.metric b{display:block;margin-top:10px;color:#fff;font-size:38px;font-weight:500}.table-wrap{margin-top:28px;overflow:auto;border:1px solid var(--line);border-radius:24px}table{width:100%;min-width:850px;border-collapse:collapse;background:#10152d}th,td{padding:17px 15px;border-bottom:1px solid #23294b;text-align:right;white-space:nowrap}th:first-child,td:first-child{text-align:left}th{color:var(--muted);background:#0b1025;position:sticky;top:0}.login{display:grid;place-items:center;min-height:55vh;text-align:center}.login button{background:linear-gradient(90deg,#7b63ff,#43dbc8);color:#080b18;border:0;font-weight:800}.hidden{display:none!important}@media(max-width:700px){.wrap{padding-left:14px;padding-right:14px}.hero{gap:12px}.icon{width:70px;height:70px}.hero p{font-size:15px}.badge{padding:9px 12px}.panel{padding:20px 14px;border-radius:27px}.cards{grid-template-columns:repeat(2,1fr)}.metric{min-height:112px;padding:17px 15px}.metric b{font-size:34px}.toolbar{align-items:stretch}select,button{padding:14px 15px;font-size:16px}}
+    .cards,.metric,.hero>div{min-width:0}.metric{overflow-wrap:anywhere}.metric b{font-size:clamp(26px,5vw,38px)}
+    @media(max-width:700px){
+      .hero{flex-wrap:wrap}.hero h1{font-size:28px}.badge{font-size:12px}.toolbar{flex-wrap:wrap}.toolbar>*{flex:1;min-width:0}.table-wrap{overflow:visible;border:0;border-radius:0;margin-top:20px}table{display:block;min-width:0;background:transparent}thead{display:none}tbody{display:grid;gap:12px}tr{display:block;border:1px solid var(--line);border-radius:18px;background:#10152d;padding:10px 14px}td{display:flex;justify-content:space-between;align-items:baseline;gap:16px;padding:9px 0;white-space:normal;text-align:right;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}td::before{content:attr(data-label);color:var(--muted);text-align:left;max-width:75%}td:first-child{font-weight:700;color:var(--mint);padding-bottom:12px}td:last-child{border-bottom:0}.note{font-size:13px}
+    }
+    @media(max-width:380px){.cards{grid-template-columns:1fr}.metric{min-height:0}.hero .icon{width:50px;height:50px;font-size:28px}.hero h1{font-size:24px}}
+  </style>
+</head>
+<body><main class="wrap">
+  <section class="hero"><div class="icon">📊</div><div><h1>Sticker.pi Metrics</h1><p>Private aggregate telemetry</p></div><span class="badge">ADMIN</span></section>
+  <section id="login" class="panel login"><div><h2>Owner access</h2><p class="status">Verify your Pi account to view private metrics.</p><button id="verify">VERIFY WITH PI</button></div></section>
+  <section id="dashboard" class="panel hidden">
+    <div class="toolbar"><select id="days"><option value="7">Last 7 days</option><option value="30" selected>Last 30 days</option><option value="90">Last 90 days</option></select><button id="refresh">Refresh</button></div>
+    <p id="status" class="status"></p>
+    <div class="cards">
+      <div class="metric">ACTIVE TODAY · UTC<b id="today">0</b><small>Approximate distinct users with recorded activity today.</small></div>
+      <div class="metric">ACTIVE USER-DAYS<b id="unique">0</b><small>Sum of daily users. A returning person counts on each active day.</small></div>
+      <div class="metric">LOGINS<b id="logins">0</b></div>
+      <div class="metric">RUNS STARTED<b id="started">0</b></div>
+      <div class="metric">RUNS COMPLETED<b id="completed">0</b></div>
+      <div class="metric">COMPLETED / STARTED<b id="runRatio">—</b><small>Period event ratio, not a player conversion or retention rate.</small></div>
+      <div class="metric">PACKS OPENED<b id="packs">0</b></div>
+      <div class="metric">PAID PACKS DELIVERED<b id="sales">0</b><small>Verified purchases fulfilled by the app.</small></div>
+      <div class="metric">PURCHASE VOLUME · PI<b id="volume">0.00</b><small>Delivered paid packs × 0.01 Pi. Gross volume, not wallet balance.</small></div>
+      <div class="metric">DUPLICATE CONVERSIONS<b id="conversions">0</b><small>Missing stickers obtained through conversion.</small></div>
+      <div class="metric">ALBUMS COMPLETED<b id="albums">0</b><small>Album completion events, including conversion.</small></div>
+      <div class="metric">RUNS / ACTIVE USER-DAY<b id="runsPerDay">—</b><small>Completed runs divided by the sum of daily users.</small></div>
+      <div class="metric">XP PACKS EARNED<b id="xpPacks">0</b><small>Free packs awarded through verified gameplay XP.</small></div>
+      <div class="metric">PLAYER-DAYS WITH A RUN<b id="playingDays">0</b><small>Players with at least one completed run, counted per UTC day.</small></div>
+      <div class="metric">PLAYER-DAYS WITH 2+ RUNS<b id="repeatDays">0</b><small>Players who completed a second run that day.</small></div>
+      <div class="metric">SECOND-RUN RATE<b id="repeatRate">—</b><small>Repeat player-days divided by player-days with a run. Not multi-day retention.</small></div>
+    </div>
+    <p class="note">All cards except “Active today” use the selected period. Counts are aggregate event telemetry, not an inventory audit. Delivery and conversion events are deduplicated; telemetry is best effort and can miss events. Distinct daily users are approximate. Conversion tracking began with v1.0.3; XP pack and repeat-play tracking began with v1.1.1 on October 7, 2026. Earlier activity is not backfilled.</p>
+    <div class="table-wrap"><table><thead><tr><th>UTC day</th><th>Active users</th><th>Logins</th><th>Runs start</th><th>Runs complete</th><th>Packs opened</th><th>Paid packs</th><th>Volume · Pi</th><th>Conversions</th><th>Albums</th><th>XP packs</th><th>Players with run</th><th>Players with 2+ runs</th></tr></thead><tbody id="rows"></tbody></table></div>
+  </section>
+</main><script>
+  Pi.init({version:'2.0',sandbox:true});
+  let accessToken='',loadSequence=0;
+  const $=id=>document.getElementById(id),number=value=>Number.isFinite(Number(value))?Math.max(0,Number(value)):0,sum=(rows,key)=>rows.reduce((n,row)=>n+number(row.events?.[key]),0);
+  function showError(message){$('status').textContent=message;$('status').classList.add('error')}
+  async function load(){
+    const sequence=++loadSequence;
+    $('status').classList.remove('error');$('status').textContent='Loading…';
+    try{
+      const response=await fetch(`/api/metrics?days=${$('days').value}`,{headers:{Authorization:`Bearer ${accessToken}`},cache:'no-store'}),data=await response.json();
+      if(sequence!==loadSequence)return;
+      if(!response.ok)throw new Error(data.error||'Metrics request failed');
+      const rows=Array.isArray(data.rows)?data.rows:[],today=new Date().toISOString().slice(0,10);
+      const unique=rows.reduce((n,row)=>n+number(row.uniqueUsers),0),started=sum(rows,'run_started'),completed=sum(rows,'run_completed'),sales=sum(rows,'paid_pack_purchased');
+      $('today').textContent=number(rows.find(row=>row.day===today)?.uniqueUsers);
+      $('unique').textContent=unique;$('logins').textContent=sum(rows,'login');$('started').textContent=started;$('completed').textContent=completed;
+      $('packs').textContent=sum(rows,'pack_opened');$('sales').textContent=sales;$('volume').textContent=(sales*0.01).toFixed(2);
+      $('conversions').textContent=sum(rows,'duplicates_converted');$('albums').textContent=sum(rows,'album_completed');
+      const playingDays=sum(rows,'player_first_run'),repeatDays=sum(rows,'player_repeat_run');
+      $('xpPacks').textContent=sum(rows,'xp_pack_earned');$('playingDays').textContent=playingDays;$('repeatDays').textContent=repeatDays;
+      $('repeatRate').textContent=playingDays?(repeatDays/playingDays*100).toFixed(1)+'%':'—';
+      $('runRatio').textContent=started?(completed/started*100).toFixed(1)+'%':'—';
+      $('runsPerDay').textContent=unique?(completed/unique).toFixed(2):'—';
+      $('rows').replaceChildren();
+      for(const row of rows){
+        const tr=document.createElement('tr'),events=row.events||{};
+        const cells=[row.day,number(row.uniqueUsers),number(events.login),number(events.run_started),number(events.run_completed),number(events.pack_opened),number(events.paid_pack_purchased),(number(events.paid_pack_purchased)*0.01).toFixed(2),number(events.duplicates_converted),number(events.album_completed),number(events.xp_pack_earned),number(events.player_first_run),number(events.player_repeat_run)];
+        const labels=['UTC day','Active users','Logins','Runs started','Runs completed','Packs opened','Paid packs','Volume · Pi','Conversions','Albums completed','XP packs','Players with a run','Players with 2+ runs'];
+        for(const [index,value] of cells.entries()){const td=document.createElement('td');td.textContent=String(value??'');td.setAttribute('data-label',labels[index]);tr.appendChild(td)}
+        $('rows').appendChild(tr);
+      }
+      $('status').textContent=`Updated ${new Date(data.generatedAt).toLocaleString()}`;
+    }catch(error){if(sequence===loadSequence)showError(error.message)}
+  }
+  $('verify').onclick=async()=>{try{const auth=await Pi.authenticate(['username'],()=>{});accessToken=auth.accessToken;$('login').classList.add('hidden');$('dashboard').classList.remove('hidden');await load()}catch(error){alert(error?.message||'Pi authentication failed')}};
+  $('refresh').onclick=load;$('days').onchange=load;
+</script></body></html>

@@ -1,5 +1,6 @@
 import {verifyPiUser,apiError} from '../lib/pi.js';
-import {grantPaidPack,rateLimit} from '../lib/store.js';
+import {grantPaidPack,rateLimit,getPlayer,albumUnlocked} from '../lib/store.js';
+import {safeRecordMetric} from '../lib/metrics.js';
 
 const PI_API_BASE='https://api.minepi.com/v2';
 const AMOUNT=0.01;
@@ -20,8 +21,8 @@ async function getPayment(id,key){
   return r.json();
 }
 
-function validPayment(p,uid){
-  return p?.user_uid===uid&&p.direction==='user_to_app'&&p.network==='Pi Testnet'&&Number(p.amount)===AMOUNT&&p.memo===MEMO&&p.metadata?.product===PRODUCT&&!p.status?.cancelled&&!p.status?.user_cancelled;
+function validPayment(p,uid,allowCancelled=false){
+  return p?.user_uid===uid&&p.direction==='user_to_app'&&p.network==='Pi Testnet'&&Number(p.amount)===AMOUNT&&(p.memo===MEMO&&(p.metadata?.albumId??1)===1||p.memo===`Sticker.pi Album ${p.metadata?.albumId??1} Bonus Pack`)&&p.metadata?.product===PRODUCT&&[1,2].includes(p.metadata?.albumId??1)&&(allowCancelled||!p.status?.cancelled&&!p.status?.user_cancelled);
 }
 
 async function approve(id,key){
@@ -45,13 +46,17 @@ export default async function handler(req,res){
     const user=await verifyPiUser(req);
     await rateLimit(user.uid,'payment',20,60);
     const body=req.body||{};
-    if(!body.action)return res.status(200).json({success:true,user:{uid:user.uid,username:user.username}});
+    if(!body.action){await safeRecordMetric(user.uid,'login');return res.status(200).json({success:true,user:{uid:user.uid,username:user.username}})}
     const apiKey=(process.env.PI_API_KEY||'').trim();
     if(!apiKey)return res.status(503).json({success:false,error:'Payment service unavailable'});
     const {action,paymentId,txid}=body;
     if(!['approve','complete','recover'].includes(action)||!paymentId)return res.status(400).json({success:false,error:'Invalid payment request'});
     let p=await getPayment(paymentId,apiKey);
+    // A confirmed cancellation can clear a pending client request without delivery.
+    // Identity, amount, network and product still come from the official lookup.
+    if(action==='recover'&&validPayment(p,user.uid,true)&&(p.status?.cancelled||p.status?.user_cancelled))return res.status(200).json({success:true,cancelled:true,completed:false});
     if(!validPayment(p,user.uid))return res.status(400).json({success:false,error:'Payment validation failed'});
+    if(!albumUnlocked(await getPlayer(user.uid,user.username),p.metadata?.albumId??1))return res.status(409).json({success:false,error:'Complete Album 1 to unlock Album 2'});
     if(action==='approve'){
       if(!p.status?.developer_approved)await approve(paymentId,apiKey);
       return res.status(200).json({success:true,approved:true});
@@ -66,7 +71,8 @@ export default async function handler(req,res){
     if(!p.status?.developer_completed)await complete(paymentId,realTxid,apiKey);
     p=await getPayment(paymentId,apiKey);
     if(!validPayment(p,user.uid)||!p.status?.developer_completed||!p.status?.transaction_verified)return res.status(409).json({success:false,pending:true,error:'Payment not fully verified yet'});
-    const grant=await grantPaidPack(user.uid,user.username,paymentId);
+    const grant=await grantPaidPack(user.uid,user.username,paymentId,p.metadata?.albumId??1);
+    if(!grant.alreadyGranted)await safeRecordMetric(user.uid,'paid_pack_purchased',paymentId);
     return res.status(200).json({success:true,completed:true,product:PRODUCT,paymentId,player:grant.player,alreadyGranted:grant.alreadyGranted});
   }catch(error){
     const status=Number(error?.status);

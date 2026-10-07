@@ -1,0 +1,33 @@
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
+const html=fs.readFileSync('index.html','utf8'),script=html.match(/<script>\s*([\s\S]*?)<\/script>/)[1];
+const els=new Map();function el(id){if(!els.has(id))els.set(id,{setAttribute(){},focus(){},textContent:'',innerHTML:'',style:{},classList:{toggle(){},add(){},remove(){},contains(){return false}},appendChild(){}});return els.get(id)}
+const ctx={Pi:{init(){}},document:{addEventListener(){},body:{style:{}},documentElement:{},getElementById:el,querySelectorAll(){return[]},createElement(){return {className:'',innerHTML:''}}},localStorage:{getItem(){return 'en'},setItem(){}},navigator:{},location:{},console,queueMicrotask,setTimeout,clearTimeout,setInterval,clearInterval,requestAnimationFrame:f=>f()};
+vm.createContext(ctx);vm.runInContext(script+';globalThis.check={set:p=>{player={...player,...p};render()},next:showNextGoal};',ctx);
+ctx.check.set({packs:0,collection:{0:1},daily:{bestScore:20,runPackGranted:false,packsOpened:0,newUnique:0}});
+assert.equal(el('q1').textContent,'20/25');assert.match(el('nextGoalBtn').textContent,/Play/);assert.match(el('albumGoalHint').textContent,/23 stickers/);
+ctx.check.set({packs:1,daily:{bestScore:28,runPackGranted:true,packsOpened:1,newUnique:2}});
+assert.equal(el('q1').textContent,'✓');assert.match(el('nextGoalBtn').textContent,/Open/);
+ctx.check.set({packs:0,collection:Object.fromEntries(Array.from({length:24},(_,i)=>[i,1]))});
+assert.match(el('nextGoalBtn').textContent,/next run/);assert.match(el('albumGoalHint').textContent,/complete/);
+assert(!script.includes('          loadLocal();'));
+assert(html.includes('sandbox: true'));assert(script.includes('amount: 0.01'));
+console.log('Progress goals: threshold, earned reward, next action, album completion and authoritative login passed.');
+ctx.check.set({activeAlbum:2,packs:1,collection:{...Object.fromEntries(Array.from({length:24},(_,i)=>[i,1])),24:1,25:1},badges:[]});
+assert.equal(el('collectionValue').textContent,'2 / 24');assert.match(el('albumGoalHint').textContent,/22 stickers to Ocean Collector/);assert.match(el('activeAlbumHint').textContent,/Ocean Wonders/);assert.equal(el('uniqueValue').textContent,26);assert.equal(el('album2Btn').disabled,false);
+assert(html.includes('id="conversionDialog"'));assert(!script.includes('if(!confirm('));assert(script.includes('albumId:activeAlbum()'));
+console.log('Album UI tests passed: per-album collection, total profile count, unlock label, purchase album metadata and custom confirmation dialog.');
+ctx.check.set({packXpProgress:320,daily:{xpPacksGranted:1}});
+assert.match(el('xpPackProgressText').textContent,/180 XP/);assert.equal(el('xpPackBar').style.width,'64%');assert.equal(el('xpPackDaily').textContent,'1/3 earned today');
+ctx.check.set({packXpProgress:320,daily:{xpPacksGranted:3}});
+assert.match(el('xpPackProgressText').textContent,/limit reached/);
+console.log('XP pack UI passed: remaining XP, progress bar, daily count and cap message.');
+
+ctx.check.set({daily:{runsCompleted:3,bestEligibleAccuracy:90,bestCombo:15,runPackGranted:true}});
+for(const id of ['q1','q2','q3','q4'])assert.equal(el(id).textContent,'✓');
+assert.equal(el('completedGoals').textContent,'4/4 goals completed');
+assert.match(el('skillGoalHelp').textContent,/next run.*bonus pack/);
+ctx.check.set({daily:{runsCompleted:3,bestEligibleAccuracy:90,bestCombo:15,runPackGranted:true,goalsPackGranted:true,goalsPackAlbum:2}});
+assert.match(el('skillGoalHelp').textContent,/bonus earned.*Album 2/);
+ctx.check.set({daily:{runsCompleted:1,bestEligibleAccuracy:0,bestCombo:9}});
+assert.equal(el('q2').textContent,'1/3');assert.equal(el('q3').textContent,'0/90%');assert.equal(el('q4').textContent,'9/15');
+console.log('Skill goals display server progress and completed count.');

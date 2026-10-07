@@ -36,3 +36,11 @@ Sticker.pi is a short-session skill game and collectible album. Players complete
 - Peer-to-peer exchange and Mainnet monetization are not active.
 - The controlled A2U tester reward is hidden from ordinary use and depends on Pi Platform authorization.
 - Test-Pi and Testnet progression have no guaranteed Mainnet or monetary value.
+
+## Mainnet feature parity (Testnet isolation retained)
+
+The Testnet build now supports two separate 24-sticker albums, duplicate conversion, a 500-gameplay-XP pack meter (up to three per UTC day), and four daily goals with one extra bonus pack per UTC day. Album 2 unlocks after Album 1 is complete; first selection grants one starter pack. Each album completion grants its badge, 250 XP and three packs once. Conversions retain at least one owned copy and cost 4/8/16/24 spare copies by rarity. Packs and run rewards are bound to their album. Existing 4/4 players receive the bonus on their next valid run that day.
+
+Existing `sticker:player:*`, leaderboard and purchase records remain in place. The Testnet challenge namespace, SDK sandbox mode, product, price, credentials and controlled A2U endpoint are preserved. Previous payments without album metadata belong to Album 1. Inventory updates reject stale lock owners; opening and conversion receipts prevent duplicate delivery. No live payment or data reset is performed by tests.
+
+Run `npm test` for UI, API, admin and the existing controlled-A2U mocks. Set `REDIS_TEST_SERVER` to a local redis-server executable for isolated Lua integration tests. Run `npm run check:build` for static syntax checks. Refresh the Testnet app in Pi Browser and verify both albums, the bonus and mobile rankings manually.
